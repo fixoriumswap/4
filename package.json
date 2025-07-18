@@ -1,4 +1,4 @@
-{
+ {
   "name": "my-solana-swap",
   "version": "1.0.0",
   "private": true,
@@ -9,19 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "^13.4.4",
+    "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "@solana/wallet-adapter-react": "1.50.1",
-    "@solana/web3.js": "1.42.0",
+    "@solana/wallet-adapter-react": "^0.19.14",
+    "@solana/web3.js": "^1.90.0",
     "@jup-ag/core": "^3.0.0-beta.1",
     "@netlify/next": "^4.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.1.6",
-    "@types/react": "^18.0.38",
-    "@types/node": "^20.3.1",
-    "eslint": "^8.40.0",
-    "eslint-config-next": "13.4.4"
+    "typescript": "^5.5.3",
+    "@types/react": "^18.3.3",
+    "@types/node": "^20.14.11",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "^14.0.0"
   }
 }
