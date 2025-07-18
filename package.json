@@ -15,7 +15,7 @@
     "@solana/wallet-adapter-react": "1.50.1",
     "@solana/web3.js": "1.42.0",
     "@jup-ag/core": "^3.0.0-beta.1",
-    "@netlify/next": "^4.41.0"
+    "@netlify/next": "^4.0.0"
   },
   "devDependencies": {
     "typescript": "^5.1.6",
