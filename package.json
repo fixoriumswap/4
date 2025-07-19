@@ -13,8 +13,8 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "@solana/wallet-adapter-react": "^0.9.27",
-    "@solana/web3.js": "^2.2.2",
-    "@jup-ag/core": "^4.0.0-beta.21"
+    "@solana/web3.js": "^1.75.0", // >=1.42.0 to satisfy @jup-ag/core
+  "@jup-ag/core": "^4.0.0-beta.21",
   },
   "devDependencies": {
     "typescript": "^5.4.5",
