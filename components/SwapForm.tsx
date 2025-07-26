@@ -85,36 +85,58 @@ export default function SwapForm() {
   async function handleSwap(e: React.FormEvent) {
     e.preventDefault();
     setSwapStatus("Preparing swap...");
+    setError("");
+
     try {
-      if (!quote || !publicKey || !signTransaction) return setSwapStatus("No route or wallet.");
+      if (!connected) {
+        setError("Please connect your Phantom wallet first");
+        return;
+      }
+
+      if (!quote || !publicKey || !signTransaction) {
+        setError("No route available or wallet not connected");
+        return;
+      }
 
       const connection = new Connection(RPC_URL);
       const serviceFeeLamports = 0.001 * 1e9; // 0.001 SOL in lamports
       const feeWallet = new PublicKey("FNVD1wied3e8WMuWs34KSamrCpughCMTjoXUE1ZXa6wM");
 
-      // Check if user has enough SOL for the fee
+      // Check if user has enough SOL for the fee + minimum rent
       const balance = await connection.getBalance(publicKey);
-      if (balance < serviceFeeLamports) {
-        throw new Error('Insufficient SOL balance for service fee');
+      const minRequiredBalance = serviceFeeLamports + 5000; // 5000 lamports for rent
+      if (balance < minRequiredBalance) {
+        setError(`Insufficient SOL balance. Need at least ${(minRequiredBalance / 1e9).toFixed(4)} SOL`);
+        return;
       }
 
+      setSwapStatus("Getting transaction...");
       const response = await fetch(`${JUPITER_API_URL}/transaction`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           quoteResponse: quote,
           userPublicKey: publicKey.toString(),
-          wrapAndUnwrapSol: true
+          wrapAndUnwrapSol: true,
+          feeAccount: feeWallet.toString()
         })
       });
 
       if (!response.ok) {
-        throw new Error('Failed to get transaction');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.error || 'Failed to get transaction');
       }
 
       const { swapTransaction } = await response.json();
+      if (!swapTransaction) {
+        throw new Error('No transaction received from Jupiter');
+      }
+
       const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
-      const swapTx = VersionedTransaction.deserialize(swapTransactionBuf);
+      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+
+      // Get latest blockhash for fee transaction
+      const { blockhash } = await connection.getLatestBlockhash();
 
       // Create fee transfer instruction
       const feeInstruction = SystemProgram.transfer({
@@ -123,45 +145,68 @@ export default function SwapForm() {
         lamports: serviceFeeLamports,
       });
 
-      // Get latest blockhash
-      const { blockhash } = await connection.getLatestBlockhash();
-
-      // Create combined transaction with fee and swap
-      const combinedMessage = TransactionMessage.compile({
+      // Create a simple fee transaction
+      const feeMessage = TransactionMessage.compile({
         payerKey: publicKey,
         recentBlockhash: blockhash,
-        instructions: [
-          ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 200000 }),
-          feeInstruction,
-          ...swapTx.message.compiledInstructions.map(ix => ({
-            programId: swapTx.message.staticAccountKeys[ix.programIdIndex],
-            keys: ix.accountKeyIndexes.map(keyIndex => ({
-              pubkey: swapTx.message.staticAccountKeys[keyIndex] || swapTx.message.addressTableLookups[0]?.readonlyIndexes?.[keyIndex - swapTx.message.staticAccountKeys.length],
-              isSigner: keyIndex === 0,
-              isWritable: !swapTx.message.addressTableLookups[0]?.readonlyIndexes?.includes(keyIndex - swapTx.message.staticAccountKeys.length)
-            })),
-            data: Buffer.from(ix.data)
-          }))
-        ]
+        instructions: [feeInstruction]
       });
+      const feeTransaction = new VersionedTransaction(feeMessage);
 
-      const combinedTx = new VersionedTransaction(combinedMessage);
+      setSwapStatus("Please sign the transactions...");
 
-      setSwapStatus("Please sign the transaction...");
-      const signedTransaction = await signTransaction(combinedTx);
+      // Sign fee transaction first
+      const signedFeeTransaction = await signTransaction(feeTransaction);
 
-      setSwapStatus("Sending transaction...");
-      const rawTransaction = signedTransaction.serialize();
-      const txid = await connection.sendRawTransaction(rawTransaction, {
+      // Sign swap transaction
+      const signedSwapTransaction = await signTransaction(transaction);
+
+      setSwapStatus("Sending transactions...");
+
+      // Send fee transaction first
+      const feeRawTransaction = signedFeeTransaction.serialize();
+      const feeTxid = await connection.sendRawTransaction(feeRawTransaction, {
         skipPreflight: true,
         maxRetries: 2
       });
 
-      setSwapStatus("Confirming transaction...");
-      await connection.confirmTransaction(txid);
-      setSwapStatus(`Swap successful! Tx: ${txid}`);
+      // Wait a moment then send swap transaction
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      const swapRawTransaction = signedSwapTransaction.serialize();
+      const swapTxid = await connection.sendRawTransaction(swapRawTransaction, {
+        skipPreflight: true,
+        maxRetries: 2
+      });
+
+      setSwapStatus("Confirming transactions...");
+
+      // Confirm both transactions
+      await Promise.all([
+        connection.confirmTransaction(feeTxid),
+        connection.confirmTransaction(swapTxid)
+      ]);
+
+      setSwapStatus(`Swap successful! Tx: ${swapTxid}`);
+
+      // Reset form after successful swap
+      setTimeout(() => {
+        setAmount("");
+        setSwapStatus("");
+      }, 5000);
+
     } catch (e: any) {
-      setSwapStatus("Swap failed: " + (e?.message || e));
+      console.error('Swap error:', e);
+      if (e?.message?.includes('User rejected')) {
+        setError("Transaction rejected by user");
+      } else if (e?.message?.includes('Insufficient')) {
+        setError(e.message);
+      } else if (e?.message?.includes('Network')) {
+        setError("Network error. Please try again.");
+      } else {
+        setError("Swap failed: " + (e?.message || 'Unknown error'));
+      }
+      setSwapStatus("");
     }
   }
 
