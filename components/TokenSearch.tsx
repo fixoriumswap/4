@@ -45,18 +45,18 @@ const POPULAR_TOKENS: Token[] = [
     logoURI: "https://bafkreicrjgjei47pz6ue5d3mi5kgurjclqxfyqfhywu5w6fhmzpe6q5afm.ipfs.nftstorage.link"
   },
   {
-    address: "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
-    symbol: "POPCAT",
-    name: "Popcat",
-    decimals: 9,
-    logoURI: "https://dd.dexscreener.com/ds-data/tokens/solana/7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr.png"
+    address: "Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB",
+    symbol: "USDT",
+    name: "Tether USD",
+    decimals: 6,
+    logoURI: "https://raw.githubusercontent.com/solana-labs/token-list/main/assets/mainnet/Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB/logo.svg"
   },
   {
-    address: "HZ1znC9XBasm9AMDhGocd9EHSyH8Pyj1EUdiPb4WnZjo",
-    symbol: "MOTHER",
-    name: "MOTHER",
-    decimals: 6,
-    logoURI: "https://dd.dexscreener.com/ds-data/tokens/solana/HZ1znC9XBasm9AMDhGocd9EHSyH8Pyj1EUdiPb4WnZjo.png"
+    address: "J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn",
+    symbol: "JITO",
+    name: "Jito",
+    decimals: 9,
+    logoURI: "https://storage.googleapis.com/token-list-swapkit/images/sol.jito-J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn.png"
   }
 ];
 
