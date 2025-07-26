@@ -43,6 +43,30 @@ function SwapFormContent() {
 
   const jupiterQuoteApi = createJupiterApiClient();
 
+  // Validate if tokens are supported by Jupiter
+  const validateTokens = async (fromAddr: string, toAddr: string) => {
+    try {
+      const response = await fetch('https://token.jup.ag/strict');
+      if (response.ok) {
+        const supportedTokens = await response.json();
+        const fromSupported = supportedTokens.some((token: any) => token.address === fromAddr);
+        const toSupported = supportedTokens.some((token: any) => token.address === toAddr);
+
+        if (!fromSupported) {
+          console.warn(`From token ${fromToken.symbol} (${fromAddr}) may not be supported by Jupiter`);
+        }
+        if (!toSupported) {
+          console.warn(`To token ${toToken.symbol} (${toAddr}) may not be supported by Jupiter`);
+        }
+
+        return { fromSupported, toSupported };
+      }
+    } catch (error) {
+      console.log('Token validation failed:', error);
+    }
+    return { fromSupported: true, toSupported: true }; // Assume supported if validation fails
+  };
+
   // Listen for token selection from trending tokens
   useEffect(() => {
     const handleTokenSelection = (event: CustomEvent) => {
