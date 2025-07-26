@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import WalletWrapper from './WalletWrapper';
-import { detectPhantomWallet, openPhantomDownload } from '../utils/walletDetection';
+import { detectPhantomWallet, openPhantomDownload, isMobileDevice } from '../utils/walletDetection';
 
 function WalletSection() {
   const { publicKey, disconnect, select, wallets, connect } = useWallet();
