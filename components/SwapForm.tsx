@@ -76,6 +76,16 @@ export default function SwapForm() {
     try {
       if (!quote || !publicKey || !signTransaction) return setSwapStatus("No route or wallet.");
 
+      const connection = new Connection(RPC_URL);
+      const serviceFeeLamports = 0.001 * 1e9; // 0.001 SOL in lamports
+      const feeWallet = new PublicKey("FNVD1wied3e8WMuWs34KSamrCpughCMTjoXUE1ZXa6wM");
+
+      // Check if user has enough SOL for the fee
+      const balance = await connection.getBalance(publicKey);
+      if (balance < serviceFeeLamports) {
+        throw new Error('Insufficient SOL balance for service fee');
+      }
+
       const response = await fetch(`${JUPITER_API_URL}/transaction`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -92,13 +102,43 @@ export default function SwapForm() {
 
       const { swapTransaction } = await response.json();
       const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
-      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+      const swapTx = VersionedTransaction.deserialize(swapTransactionBuf);
+
+      // Create fee transfer instruction
+      const feeInstruction = SystemProgram.transfer({
+        fromPubkey: publicKey,
+        toPubkey: feeWallet,
+        lamports: serviceFeeLamports,
+      });
+
+      // Get latest blockhash
+      const { blockhash } = await connection.getLatestBlockhash();
+
+      // Create combined transaction with fee and swap
+      const combinedMessage = TransactionMessage.compile({
+        payerKey: publicKey,
+        recentBlockhash: blockhash,
+        instructions: [
+          ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 200000 }),
+          feeInstruction,
+          ...swapTx.message.compiledInstructions.map(ix => ({
+            programId: swapTx.message.staticAccountKeys[ix.programIdIndex],
+            keys: ix.accountKeyIndexes.map(keyIndex => ({
+              pubkey: swapTx.message.staticAccountKeys[keyIndex] || swapTx.message.addressTableLookups[0]?.readonlyIndexes?.[keyIndex - swapTx.message.staticAccountKeys.length],
+              isSigner: keyIndex === 0,
+              isWritable: !swapTx.message.addressTableLookups[0]?.readonlyIndexes?.includes(keyIndex - swapTx.message.staticAccountKeys.length)
+            })),
+            data: Buffer.from(ix.data)
+          }))
+        ]
+      });
+
+      const combinedTx = new VersionedTransaction(combinedMessage);
 
       setSwapStatus("Please sign the transaction...");
-      const signedTransaction = await signTransaction(transaction);
+      const signedTransaction = await signTransaction(combinedTx);
 
       setSwapStatus("Sending transaction...");
-      const connection = new Connection(RPC_URL);
       const rawTransaction = signedTransaction.serialize();
       const txid = await connection.sendRawTransaction(rawTransaction, {
         skipPreflight: true,
