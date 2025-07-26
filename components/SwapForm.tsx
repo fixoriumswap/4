@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import { Connection, PublicKey, VersionedTransaction, SystemProgram, TransactionMessage, ComputeBudgetProgram } from '@solana/web3.js';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
 const JUPITER_API_URL = 'https://api.jup.ag/swap/v6';
