@@ -9,7 +9,7 @@ import { clusterApiUrl } from '@solana/web3.js';
 import { useMemo } from 'react';
 
 export default function App({ Component, pageProps }: AppProps) {
-  const network = WalletAdapterNetwork.Devnet;
+  const network = WalletAdapterNetwork.Mainnet;
   const endpoint = useMemo(() => clusterApiUrl(network), [network]);
 
   const wallets = useMemo(
