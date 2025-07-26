@@ -206,6 +206,28 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   background: #e53535;
 }
 
+.wallet-connection {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.phantom-download-btn {
+  background: #ab9ff2;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.phantom-download-btn:hover {
+  background: #9c8bef;
+}
+
 /* Token Search Styles */
 .token-search-container {
   position: relative;
