@@ -54,4 +54,18 @@ function TokenBalancesContent() {
       </div>
     </div>
   );
-         }
+}
+
+export default function TokenBalances() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return null;
+  }
+
+  return <TokenBalancesContent />;
+}
