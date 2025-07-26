@@ -32,30 +32,24 @@ export default function SwapForm() {
     async function fetchQuote() {
       setQuote(null);
       setSwapStatus("");
-      if (!fromMint || !toMint || !amount || Number(amount) <= 0 || fromMint === toMint || !publicKey) return;
+      if (!fromMint || !toMint || !amount || Number(amount) <= 0 || fromMint === toMint) return;
       setQuoteLoading(true);
       try {
-        const jupiter = await Jupiter.load({
-          connection: new Connection(RPC_URL),
-          cluster: 'mainnet-beta',
-          userPublicKey: publicKey,
-          wrapUnwrapSOL: true
-        });
         const amountAtoms = Math.floor(Number(amount) * Math.pow(10, TOKEN_DECIMALS[fromMint]));
-        const routes = await jupiter.computeRoutes({
-          inputMint: new PublicKey(fromMint),
-          outputMint: new PublicKey(toMint),
+        const quote = await jupiterQuoteApi.quoteGet({
+          inputMint: fromMint,
+          outputMint: toMint,
           amount: amountAtoms,
-          slippage: 0.5
+          slippageBps: 50 // 0.5%
         });
-        setQuote(routes.routesInfos.length ? routes.routesInfos[0] : null);
+        setQuote(quote);
       } catch (e) {
         setQuote(null);
       }
       setQuoteLoading(false);
     }
     fetchQuote();
-  }, [fromMint, toMint, amount, publicKey]);
+  }, [fromMint, toMint, amount]);
 
   async function handleSwap(e: React.FormEvent) {
     e.preventDefault();
