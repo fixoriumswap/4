@@ -74,22 +74,40 @@ export default function SwapForm() {
     e.preventDefault();
     setSwapStatus("Preparing swap...");
     try {
-      if (!quote || !publicKey || !wallet) return setSwapStatus("No route or wallet.");
-      const jupiter = await Jupiter.load({
-        connection: new Connection(RPC_URL),
-        cluster: 'mainnet-beta',
-        userPublicKey: publicKey,
-        wrapUnwrapSOL: true
+      if (!quote || !publicKey || !signTransaction) return setSwapStatus("No route or wallet.");
+
+      const response = await fetch(`${JUPITER_API_URL}/transaction`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          quoteResponse: quote,
+          userPublicKey: publicKey.toString(),
+          wrapAndUnwrapSol: true
+        })
       });
-      const swapResult = await jupiter.exchange({
-        routeInfo: quote,
-        wallet: wallet
-      });
-      if (swapResult.error) {
-        setSwapStatus("Swap error: " + swapResult.error.message);
-      } else {
-        setSwapStatus("Swap submitted! Tx: " + swapResult.txid);
+
+      if (!response.ok) {
+        throw new Error('Failed to get transaction');
       }
+
+      const { swapTransaction } = await response.json();
+      const swapTransactionBuf = Buffer.from(swapTransaction, 'base64');
+      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+
+      setSwapStatus("Please sign the transaction...");
+      const signedTransaction = await signTransaction(transaction);
+
+      setSwapStatus("Sending transaction...");
+      const connection = new Connection(RPC_URL);
+      const rawTransaction = signedTransaction.serialize();
+      const txid = await connection.sendRawTransaction(rawTransaction, {
+        skipPreflight: true,
+        maxRetries: 2
+      });
+
+      setSwapStatus("Confirming transaction...");
+      await connection.confirmTransaction(txid);
+      setSwapStatus(`Swap successful! Tx: ${txid}`);
     } catch (e: any) {
       setSwapStatus("Swap failed: " + (e?.message || e));
     }
