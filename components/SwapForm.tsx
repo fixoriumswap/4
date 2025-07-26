@@ -187,34 +187,111 @@ export default function SwapForm() {
   }
 
   return (
-    <form className="swap-form card" onSubmit={handleSwap} autoComplete="off">
-      <label className="swap-label">From Token</label>
-      <select className="swap-input" value={fromMint} onChange={e => setFromMint(e.target.value)}>
-        <option value="So11111111111111111111111111111111111111112">SOL</option>
-        <option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
-        <option value="DezXAZ8z7PnrnRJjz3wXBoRhwTLdMPkqhuBczetogeoK">BONK</option>
-        <option value="EKpQGSJtjMFqKZ9KQanSqYXRcF8fBtUk6goG7zcX3New">WIF</option>
-      </select>
-      <label className="swap-label">To Token</label>
-      <select className="swap-input" value={toMint} onChange={e => setToMint(e.target.value)}>
-        <option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
-        <option value="So11111111111111111111111111111111111111112">SOL</option>
-        <option value="DezXAZ8z7PnrnRJjz3wXBoRhwTLdMPkqhuBczetogeoK">BONK</option>
-        <option value="EKpQGSJtjMFqKZ9KQanSqYXRcF8fBtUk6goG7zcX3New">WIF</option>
-      </select>
-      <label className="swap-label">Amount</label>
-      <input className="swap-input" type="number" min="0" step="any" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Enter amount" />
-      <div id="swapRatio">
-        {quoteLoading ? <span className="spinner"/> : (
-          quote ? (
-            <div>
-              Rate: <b>{amount} {TOKEN_SYMBOLS[fromMint]}</b> ≈ <b>{(parseInt(quote.outAmount)/Math.pow(10,TOKEN_DECIMALS[toMint])).toFixed(6)} {TOKEN_SYMBOLS[toMint]}</b>
-            </div>
-          ) : amount && fromMint !== toMint ? <span style={{color:"#f73e3e"}}>No route found.</span> : null
-        )}
+    <div className="swap-form card">
+      <h2 className="swap-title">Token Swap</h2>
+
+      <div className="swap-section">
+        <div className="swap-label-row">
+          <label className="swap-label">From Token</label>
+          <span className="balance-display">Balance: {fromBalance.toFixed(6)} {fromToken.symbol}</span>
+        </div>
+        <TokenSearch
+          onTokenSelect={setFromToken}
+          placeholder="Select token to swap from"
+          selectedToken={fromToken}
+        />
       </div>
-      <button className="swap-btn" type="submit" disabled={!quote || !publicKey}>Swap</button>
-      <div id="swapStatus" style={{marginTop:"10px"}}>{swapStatus}</div>
-    </form>
+
+      <div className="swap-section">
+        <div className="swap-label-row">
+          <label className="swap-label">To Token</label>
+          <span className="balance-display">Balance: {toBalance.toFixed(6)} {toToken.symbol}</span>
+        </div>
+        <TokenSearch
+          onTokenSelect={setToToken}
+          placeholder="Select token to receive"
+          selectedToken={toToken}
+        />
+      </div>
+
+      <div className="swap-section">
+        <label className="swap-label">Amount to Swap</label>
+        <div className="amount-input-container">
+          <input
+            className="swap-input"
+            type="number"
+            min="0"
+            step="any"
+            value={amount}
+            onChange={e => setAmount(e.target.value)}
+            placeholder="0.00"
+          />
+          <button
+            type="button"
+            className="max-btn"
+            onClick={() => setAmount(fromBalance.toString())}
+          >
+            MAX
+          </button>
+        </div>
+      </div>
+
+      <div className="swap-section">
+        <label className="swap-label">Receive Address (Optional)</label>
+        <input
+          className="swap-input"
+          type="text"
+          value={receiveAddress}
+          onChange={e => setReceiveAddress(e.target.value)}
+          placeholder="Leave empty to receive in your wallet"
+        />
+      </div>
+
+      <div className="quote-section">
+        {quoteLoading ? (
+          <div className="loading-quote">
+            <span className="spinner"/> Fetching best quote...
+          </div>
+        ) : quote ? (
+          <div className="quote-details">
+            <div className="quote-row">
+              <span>You pay:</span>
+              <span><b>{amount} {fromToken.symbol}</b></span>
+            </div>
+            <div className="quote-row">
+              <span>You receive:</span>
+              <span><b>{(parseInt(quote.outAmount)/Math.pow(10,toToken.decimals)).toFixed(6)} {toToken.symbol}</b></span>
+            </div>
+            <div className="quote-row">
+              <span>Price impact:</span>
+              <span>{quote.priceImpactPct ? `${(parseFloat(quote.priceImpactPct) * 100).toFixed(2)}%` : 'N/A'}</span>
+            </div>
+            <div className="quote-row small">
+              <span>Platform fees:</span>
+              <span>{quote.platformFee ? `${quote.platformFee.amount} ${quote.platformFee.mint}` : 'None'}</span>
+            </div>
+          </div>
+        ) : amount && fromToken.address !== toToken.address ? (
+          <div className="no-quote">
+            <span style={{color:"#f73e3e"}}>No route found</span>
+          </div>
+        ) : null}
+      </div>
+
+      <button
+        className="swap-btn"
+        type="button"
+        onClick={handleSwap}
+        disabled={!quote || !publicKey || quoteLoading}
+      >
+        {!publicKey ? 'Connect Wallet' :
+         quoteLoading ? 'Finding Route...' :
+         quote ? 'Swap Tokens' : 'Enter Amount'}
+      </button>
+
+      {swapStatus && (
+        <div className="swap-status">{swapStatus}</div>
+      )}
+    </div>
   );
-    }
+}
