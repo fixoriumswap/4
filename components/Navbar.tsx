@@ -4,8 +4,9 @@ import WalletWrapper from './WalletWrapper';
 import { detectPhantomWallet, openPhantomDownload } from '../utils/walletDetection';
 
 function WalletSection() {
-  const { publicKey, disconnect } = useWallet();
+  const { publicKey, disconnect, select, wallets, connect } = useWallet();
   const [isPhantomDetected, setIsPhantomDetected] = useState(false);
+  const [connecting, setConnecting] = useState(false);
   const address = publicKey?.toBase58();
 
   useEffect(() => {
@@ -23,21 +24,52 @@ function WalletSection() {
     }
   }
 
+  async function handleConnectWallet() {
+    if (connecting) return;
+
+    setConnecting(true);
+    try {
+      if (isPhantomDetected) {
+        // Try to connect to Phantom browser extension
+        const phantomWallet = wallets.find(wallet => wallet.adapter.name === 'Phantom');
+        if (phantomWallet) {
+          select(phantomWallet.adapter.name);
+          await connect();
+        }
+      } else {
+        // Redirect to Phantom mobile wallet
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+
+        if (isMobile) {
+          // For mobile, try to open Phantom app
+          const currentUrl = window.location.href;
+          const phantomUrl = `https://phantom.app/ul/browse/${encodeURIComponent(currentUrl)}?ref=${encodeURIComponent(window.location.origin)}`;
+          window.open(phantomUrl, '_blank');
+        } else {
+          // For desktop, prompt to install Phantom
+          if (confirm('Phantom wallet not detected. Would you like to install it?')) {
+            openPhantomDownload();
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Wallet connection error:', error);
+      alert('Failed to connect wallet. Please try again.');
+    } finally {
+      setConnecting(false);
+    }
+  }
+
   return (
     <div className="navbar-right">
       {!publicKey ? (
-        <div className="wallet-connection">
-          <WalletMultiButton />
-          {!isPhantomDetected && (
-            <button
-              className="phantom-download-btn"
-              onClick={openPhantomDownload}
-              title="Install Phantom Wallet"
-            >
-              📱 Get Phantom
-            </button>
-          )}
-        </div>
+        <button
+          className="connect-wallet-btn"
+          onClick={handleConnectWallet}
+          disabled={connecting}
+        >
+          {connecting ? 'Connecting...' : 'Connect Wallet'}
+        </button>
       ) : (
         <div className="wallet-connected">
           <span className="wallet-address" title={address}>
