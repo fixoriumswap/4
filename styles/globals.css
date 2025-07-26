@@ -228,6 +228,29 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   background: #9c8bef;
 }
 
+.connect-wallet-btn {
+  background: #29d6b6;
+  color: #23272f;
+  border: none;
+  border-radius: 6px;
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+  min-width: 140px;
+}
+
+.connect-wallet-btn:hover:not(:disabled) {
+  background: #22bca7;
+}
+
+.connect-wallet-btn:disabled {
+  background: #666;
+  cursor: not-allowed;
+  color: #999;
+}
+
 /* Token Search Styles */
 .token-search-container {
   position: relative;
