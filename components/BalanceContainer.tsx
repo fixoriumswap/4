@@ -5,27 +5,46 @@ import { Connection } from '@solana/web3.js';
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
 
 function BalanceContent() {
-  const { publicKey } = useWallet();
+  const { publicKey, connected } = useWallet();
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     async function fetchTotalBalance() {
-      if (!publicKey) {
+      if (!publicKey || !connected) {
         setTotalBalance(0);
         return;
       }
 
       setLoading(true);
       try {
-        const connection = new Connection(RPC_URL);
-        
-        // Get SOL balance
-        const solBalance = await connection.getBalance(publicKey);
+        const connection = new Connection(RPC_URL, {
+          commitment: 'confirmed',
+          confirmTransactionInitialTimeout: 30000,
+        });
+
+        console.log('Fetching balance for:', publicKey.toString());
+
+        // Get SOL balance with retry logic
+        let retries = 3;
+        let solBalance = 0;
+
+        while (retries > 0) {
+          try {
+            solBalance = await connection.getBalance(publicKey);
+            break;
+          } catch (retryError) {
+            console.log(`Balance fetch attempt ${4 - retries} failed:`, retryError);
+            retries--;
+            if (retries > 0) {
+              await new Promise(resolve => setTimeout(resolve, 1000));
+            }
+          }
+        }
+
         const solAmount = solBalance / Math.pow(10, 9);
-        
-        // For now, just show SOL balance as total
-        // In production, you would convert all token values to USD and sum them
+        console.log('SOL Balance:', solAmount);
+
         setTotalBalance(solAmount);
       } catch (error) {
         console.error('Error fetching balance:', error);
@@ -36,7 +55,11 @@ function BalanceContent() {
     }
 
     fetchTotalBalance();
-  }, [publicKey]);
+
+    // Refresh balance every 30 seconds
+    const interval = setInterval(fetchTotalBalance, 30000);
+    return () => clearInterval(interval);
+  }, [publicKey, connected]);
 
   if (!publicKey) return null;
 
