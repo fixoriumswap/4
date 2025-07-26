@@ -1,4 +1,4 @@
- import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Header from '../components/Header';
 import WalletBar from '../components/WalletBar';
 import TokenBalances from '../components/TokenBalances';
@@ -16,17 +16,16 @@ export default function Home() {
   }
 
   return (
-    <>
+    <div style={{ minHeight: '100vh', background: '#181a20', color: '#fff' }}>
       <Header />
       <main>
         <div style={{display: "flex", justifyContent: "flex-end", marginTop: "18px"}}>
           {!publicKey && <WalletMultiButton />}
-          {/* WalletBar shows only when connected */}
           {publicKey && showWalletBar && <WalletBar onDisconnect={handleDisconnect} />}
         </div>
         {publicKey && <TokenBalances />}
         <SwapForm />
       </main>
-    </>
+    </div>
   );
-          }
+}
