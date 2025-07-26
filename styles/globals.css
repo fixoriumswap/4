@@ -58,6 +58,53 @@ a { color: inherit; text-decoration: none; }
 .logo-title-wrap { display: flex; align-items: center; }
 .logo { height: 36px; width: 36px; margin-right: 10px; }
 .title { font-size: 24px; font-weight: bold; }
+
+.wallet-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.connect-btn, .disconnect-btn {
+  background: #29d6b6;
+  color: #23272f;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-weight: bold;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.connect-btn:hover, .disconnect-btn:hover {
+  background: #22bca7;
+}
+
+.connect-btn:disabled {
+  background: #555f70;
+  color: #999;
+  cursor: not-allowed;
+}
+
+.wallet-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.wallet-address {
+  color: #29d6b6;
+  font-weight: bold;
+}
+
+.wallet-balance {
+  color: #fff;
+  background: #444c56;
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
 main { max-width: 600px; margin: 32px auto; padding: 0 16px; }
 .swap-form { margin: 32px auto; max-width: 400px; }
 .swap-input {
