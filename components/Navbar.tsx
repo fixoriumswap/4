@@ -6,7 +6,12 @@ import { detectPhantomWallet, openPhantomDownload } from '../utils/walletDetecti
 
 function WalletSection() {
   const { publicKey, disconnect } = useWallet();
+  const [isPhantomDetected, setIsPhantomDetected] = useState(false);
   const address = publicKey?.toBase58();
+
+  useEffect(() => {
+    setIsPhantomDetected(detectPhantomWallet());
+  }, []);
 
   function shortAddr(addr: string) {
     return addr ? `${addr.slice(0,4)}...${addr.slice(-4)}` : '';
@@ -22,7 +27,18 @@ function WalletSection() {
   return (
     <div className="navbar-right">
       {!publicKey ? (
-        <WalletMultiButton />
+        <div className="wallet-connection">
+          <WalletMultiButton />
+          {!isPhantomDetected && (
+            <button
+              className="phantom-download-btn"
+              onClick={openPhantomDownload}
+              title="Install Phantom Wallet"
+            >
+              📱 Get Phantom
+            </button>
+          )}
+        </div>
       ) : (
         <div className="wallet-connected">
           <span className="wallet-address" title={address}>
