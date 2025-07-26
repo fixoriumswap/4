@@ -65,21 +65,56 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
   async function searchTokenByAddress(address: string) {
     try {
       setLoading(true);
+
+      // Validate address format
+      if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
+        setTokens(POPULAR_TOKENS);
+        return;
+      }
+
       const pubkey = new PublicKey(address);
-      
-      // Try to get token metadata
+
+      // Try to get account info to verify it exists
       const accountInfo = await connection.getAccountInfo(pubkey);
       if (accountInfo) {
-        const customToken: Token = {
-          address: address,
-          symbol: `${address.slice(0, 4)}...${address.slice(-4)}`,
-          name: `Token ${address.slice(0, 8)}`,
-          decimals: 9, // Default, should be fetched from token metadata
-        };
-        setTokens([customToken, ...POPULAR_TOKENS]);
+        // Try to get token metadata from Jupiter API
+        try {
+          const response = await fetch(`https://token.jup.ag/token/${address}`);
+          if (response.ok) {
+            const tokenData = await response.json();
+            const customToken: Token = {
+              address: address,
+              symbol: tokenData.symbol || `${address.slice(0, 4)}...${address.slice(-4)}`,
+              name: tokenData.name || `Token ${address.slice(0, 8)}`,
+              decimals: tokenData.decimals || 9,
+              logoURI: tokenData.logoURI
+            };
+            setTokens([customToken, ...POPULAR_TOKENS]);
+          } else {
+            // Fallback if no metadata found
+            const customToken: Token = {
+              address: address,
+              symbol: `${address.slice(0, 4)}...${address.slice(-4)}`,
+              name: `Custom Token`,
+              decimals: 9,
+            };
+            setTokens([customToken, ...POPULAR_TOKENS]);
+          }
+        } catch (metadataError) {
+          // Fallback token
+          const customToken: Token = {
+            address: address,
+            symbol: `${address.slice(0, 4)}...${address.slice(-4)}`,
+            name: `Token ${address.slice(0, 8)}`,
+            decimals: 9,
+          };
+          setTokens([customToken, ...POPULAR_TOKENS]);
+        }
+      } else {
+        setTokens(POPULAR_TOKENS);
       }
     } catch (error) {
-      console.log('Token not found or invalid address');
+      console.log('Token search error:', error);
       setTokens(POPULAR_TOKENS);
     } finally {
       setLoading(false);
