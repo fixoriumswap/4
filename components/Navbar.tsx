@@ -29,12 +29,37 @@ function WalletSection() {
 
     setConnecting(true);
     try {
-      if (isPhantomDetected) {
-        // Try to connect to Phantom browser extension
-        const phantomWallet = wallets.find(wallet => wallet.adapter.name === 'Phantom');
-        if (phantomWallet) {
-          select(phantomWallet.adapter.name);
-          await connect();
+      // Force re-check Phantom detection
+      const phantomDetected = detectPhantomWallet();
+      console.log('Phantom detected on click:', phantomDetected);
+
+      if (phantomDetected) {
+        // Direct Phantom connection for better compatibility
+        const phantom = getPhantomWallet();
+        if (phantom) {
+          try {
+            console.log('Connecting directly to Phantom...');
+            const response = await phantom.connect();
+            console.log('Phantom connection response:', response);
+
+            // Also ensure the wallet adapter knows about this
+            const phantomAdapter = wallets.find(wallet => wallet.adapter.name === 'Phantom');
+            if (phantomAdapter) {
+              select(phantomAdapter.adapter.name);
+            }
+
+            // The wallet should now be connected
+            console.log('Phantom connected successfully');
+          } catch (phantomError) {
+            console.error('Direct Phantom connection failed:', phantomError);
+
+            // Fallback to adapter connection
+            const phantomWallet = wallets.find(wallet => wallet.adapter.name === 'Phantom');
+            if (phantomWallet) {
+              select(phantomWallet.adapter.name);
+              await connect();
+            }
+          }
         }
       } else {
         // Handle case when Phantom is not detected
@@ -43,27 +68,18 @@ function WalletSection() {
           const currentUrl = window.location.href;
           const phantomUrl = `https://phantom.app/ul/browse/${encodeURIComponent(currentUrl)}?ref=${encodeURIComponent(window.location.origin)}`;
 
-          // Try to open Phantom app, fallback to app store
-          const phantomApp = window.open(phantomUrl, '_blank');
-
-          // If popup was blocked or app not installed, show install option
-          setTimeout(() => {
-            if (!phantomApp || phantomApp.closed) {
-              if (confirm('Phantom app not found. Would you like to install it?')) {
-                openPhantomDownload();
-              }
-            }
-          }, 3000);
+          alert('Redirecting to Phantom app...');
+          window.location.href = phantomUrl;
         } else {
           // For desktop, prompt to install Phantom extension
-          if (confirm('Phantom wallet extension not detected. Would you like to install it?')) {
+          if (confirm('Phantom wallet extension not detected in Brave browser. Please install Phantom extension and refresh the page.')) {
             openPhantomDownload();
           }
         }
       }
     } catch (error) {
       console.error('Wallet connection error:', error);
-      alert('Failed to connect wallet. Please try again.');
+      alert(`Failed to connect wallet: ${error.message || 'Please try again.'}`);
     } finally {
       setConnecting(false);
     }
