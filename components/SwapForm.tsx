@@ -146,11 +146,11 @@ export default function SwapForm() {
       });
 
       // Create a simple fee transaction
-      const feeMessage = TransactionMessage.compile({
+      const feeMessage = new TransactionMessage({
         payerKey: publicKey,
         recentBlockhash: blockhash,
         instructions: [feeInstruction]
-      });
+      }).compileToV0Message();
       const feeTransaction = new VersionedTransaction(feeMessage);
 
       setSwapStatus("Please sign the transactions...");
