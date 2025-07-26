@@ -55,10 +55,24 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
   const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   useEffect(() => {
-    if (searchTerm.length > 10 && searchTerm.length < 50) {
-      searchTokenByAddress(searchTerm);
-    } else {
+    // Trigger search for potential Solana addresses (including pump.fun tokens)
+    if (searchTerm.length >= 32 && searchTerm.length <= 44 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(searchTerm)) {
+      // Looks like a Solana address, search for it
+      const timeoutId = setTimeout(() => {
+        searchTokenByAddress(searchTerm);
+      }, 500); // Debounce search
+
+      return () => clearTimeout(timeoutId);
+    } else if (searchTerm.length === 0) {
+      // Reset to popular tokens when search is cleared
       setTokens(POPULAR_TOKENS);
+    } else if (searchTerm.length > 0) {
+      // Filter popular tokens by search term
+      const filtered = POPULAR_TOKENS.filter(token =>
+        token.symbol.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        token.name.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setTokens(filtered.length > 0 ? filtered : POPULAR_TOKENS);
     }
   }, [searchTerm]);
 
