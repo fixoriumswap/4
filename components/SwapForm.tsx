@@ -44,30 +44,31 @@ export default function SwapForm() {
     async function fetchQuote() {
       setQuote(null);
       setSwapStatus("");
-      if (!fromMint || !toMint || !amount || Number(amount) <= 0 || fromMint === toMint || !publicKey) return;
+      if (!fromMint || !toMint || !amount || Number(amount) <= 0 || fromMint === toMint) return;
       setQuoteLoading(true);
       try {
-        const jupiter = await Jupiter.load({
-          connection: new Connection(RPC_URL),
-          cluster: 'mainnet-beta',
-          userPublicKey: publicKey,
-          wrapUnwrapSOL: true
+        const amountLamports = Math.floor(Number(amount) * Math.pow(10, TOKEN_DECIMALS[fromMint]));
+        const params = new URLSearchParams({
+          inputMint: fromMint,
+          outputMint: toMint,
+          amount: amountLamports.toString(),
+          slippageBps: '50'
         });
-        const amountAtoms = Math.floor(Number(amount) * Math.pow(10, TOKEN_DECIMALS[fromMint]));
-        const routes = await jupiter.computeRoutes({
-          inputMint: new PublicKey(fromMint),
-          outputMint: new PublicKey(toMint),
-          amount: amountAtoms,
-          slippage: 0.5
-        });
-        setQuote(routes.routesInfos.length ? routes.routesInfos[0] : null);
+
+        const response = await fetch(`${JUPITER_API_URL}/quote?${params}`);
+        if (response.ok) {
+          const quoteData = await response.json();
+          setQuote(quoteData);
+        } else {
+          setQuote(null);
+        }
       } catch (e) {
         setQuote(null);
       }
       setQuoteLoading(false);
     }
     fetchQuote();
-  }, [fromMint, toMint, amount, publicKey]);
+  }, [fromMint, toMint, amount]);
 
   async function handleSwap(e: React.FormEvent) {
     e.preventDefault();
