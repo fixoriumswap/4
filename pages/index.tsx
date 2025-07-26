@@ -8,7 +8,7 @@ export default function Home() {
   const { publicKey } = useWallet();
 
   return (
-    <div style={{ minHeight: '100vh', background: '#181a20', color: '#fff' }}>
+    <div style={{ minHeight: '100vh', background: '#181a20', color: '#fff' }} suppressHydrationWarning>
       <Navbar />
       <main>
         {publicKey && <TokenBalances />}
