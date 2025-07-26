@@ -98,32 +98,72 @@ function SwapFormContent() {
     async function fetchQuote() {
       setQuote(null);
       setSwapStatus("");
-      if (!fromToken.address || !toToken.address || !amount || Number(amount) <= 0 || fromToken.address === toToken.address) return;
+
+      if (!fromToken.address || !toToken.address || !amount || Number(amount) <= 0 || fromToken.address === toToken.address) {
+        return;
+      }
 
       setQuoteLoading(true);
+
       try {
         const amountAtoms = Math.floor(Number(amount) * Math.pow(10, fromToken.decimals));
 
-        // Use fetch directly for better error handling
-        const response = await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${fromToken.address}&outputMint=${toToken.address}&amount=${amountAtoms}&slippageBps=50`);
+        console.log('Fetching quote for:', {
+          from: fromToken.symbol,
+          to: toToken.symbol,
+          amount: amountAtoms,
+          fromMint: fromToken.address,
+          toMint: toToken.address
+        });
+
+        // Enhanced Jupiter API call with more parameters for better compatibility
+        const queryParams = new URLSearchParams({
+          inputMint: fromToken.address,
+          outputMint: toToken.address,
+          amount: amountAtoms.toString(),
+          slippageBps: '50',
+          onlyDirectRoutes: 'false',
+          asLegacyTransaction: 'false'
+        });
+
+        const response = await fetch(`https://quote-api.jup.ag/v6/quote?${queryParams}`, {
+          method: 'GET',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+          },
+        });
+
+        console.log('Quote response status:', response.status);
 
         if (!response.ok) {
-          throw new Error(`Quote API error: ${response.status}`);
+          const errorText = await response.text();
+          console.error('Quote API error response:', errorText);
+          throw new Error(`Quote API error: ${response.status} - ${errorText}`);
         }
 
         const quote = await response.json();
+        console.log('Quote received:', quote);
+
+        // Validate quote response
+        if (!quote || !quote.outAmount) {
+          throw new Error('Invalid quote response');
+        }
+
         setQuote(quote);
       } catch (e) {
         console.error('Quote error:', e);
         setQuote(null);
+        setSwapStatus(`Quote error: ${e.message || 'Unable to find route'}`);
+      } finally {
+        setQuoteLoading(false);
       }
-      setQuoteLoading(false);
     }
 
     fetchQuote();
 
-    // Auto-refresh quotes every 15 seconds (less frequent to avoid rate limits)
-    const interval = setInterval(fetchQuote, 15000);
+    // Auto-refresh quotes every 20 seconds (more conservative)
+    const interval = setInterval(fetchQuote, 20000);
     return () => clearInterval(interval);
   }, [fromToken, toToken, amount]);
 
