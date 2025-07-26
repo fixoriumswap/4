@@ -85,12 +85,15 @@ function SwapFormContent() {
       setQuoteLoading(true);
       try {
         const amountAtoms = Math.floor(Number(amount) * Math.pow(10, fromToken.decimals));
-        const quote = await jupiterQuoteApi.quoteGet({
-          inputMint: fromToken.address,
-          outputMint: toToken.address,
-          amount: amountAtoms,
-          slippageBps: 50 // 0.5%
-        });
+
+        // Use fetch directly for better error handling
+        const response = await fetch(`https://quote-api.jup.ag/v6/quote?inputMint=${fromToken.address}&outputMint=${toToken.address}&amount=${amountAtoms}&slippageBps=50`);
+
+        if (!response.ok) {
+          throw new Error(`Quote API error: ${response.status}`);
+        }
+
+        const quote = await response.json();
         setQuote(quote);
       } catch (e) {
         console.error('Quote error:', e);
@@ -101,17 +104,10 @@ function SwapFormContent() {
 
     fetchQuote();
 
-    // Auto-refresh quotes every 10 seconds
-    const interval = setInterval(fetchQuote, 10000);
+    // Auto-refresh quotes every 15 seconds (less frequent to avoid rate limits)
+    const interval = setInterval(fetchQuote, 15000);
     return () => clearInterval(interval);
   }, [fromToken, toToken, amount]);
-
-  // Set receive address to user's wallet by default
-  useEffect(() => {
-    if (publicKey && !receiveAddress) {
-      setReceiveAddress(publicKey.toString());
-    }
-  }, [publicKey]);
 
   async function handleSwap(e: React.FormEvent) {
     e.preventDefault();
