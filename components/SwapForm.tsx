@@ -3,6 +3,7 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { createJupiterApiClient, QuoteResponse } from '@jup-ag/api';
 import TokenSearch from './TokenSearch';
+import WalletWrapper from './WalletWrapper';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
 
