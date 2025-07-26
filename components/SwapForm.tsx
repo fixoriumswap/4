@@ -109,30 +109,34 @@ function SwapFormContent() {
     return () => clearInterval(interval);
   }, [fromToken, toToken, amount]);
 
-  async function handleSwap(e: React.FormEvent) {
-    e.preventDefault();
+  async function handleSwap() {
     setSwapStatus("Preparing swap...");
 
     try {
-      if (!quote || !publicKey || !wallet || !signTransaction) {
+      if (!quote || !publicKey || !signTransaction) {
         return setSwapStatus("No route or wallet.");
-      }
-
-      if (!receiveAddress) {
-        return setSwapStatus("Please enter a receive address.");
       }
 
       setSwapStatus("Building transaction...");
 
-      // Get swap transaction
-      const swapResult = await jupiterQuoteApi.swapPost({
-        swapRequest: {
+      // Use fetch for swap transaction
+      const swapResponse = await fetch('https://quote-api.jup.ag/v6/swap', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
           quoteResponse: quote,
           userPublicKey: publicKey.toString(),
           wrapAndUnwrapSol: true,
-          destinationTokenAccount: receiveAddress !== publicKey.toString() ? receiveAddress : undefined,
-        }
+        })
       });
+
+      if (!swapResponse.ok) {
+        throw new Error(`Swap API error: ${swapResponse.status}`);
+      }
+
+      const swapResult = await swapResponse.json();
 
       setSwapStatus("Please sign the transaction...");
 
