@@ -205,3 +205,111 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
 .disconnect-btn:hover {
   background: #e53535;
 }
+
+/* Token Search Styles */
+.token-search-container {
+  position: relative;
+  width: 100%;
+}
+
+.token-search-selected {
+  width: 100%;
+  padding: 12px;
+  background: #444c56;
+  border: 1px solid #666;
+  border-radius: 8px;
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 48px;
+  box-sizing: border-box;
+}
+
+.token-search-selected:hover {
+  border-color: #29d6b6;
+}
+
+.selected-token {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.token-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+
+.dropdown-arrow {
+  font-size: 12px;
+  color: #999;
+}
+
+.token-search-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: #23272f;
+  border: 1px solid #666;
+  border-radius: 8px;
+  z-index: 1000;
+  max-height: 300px;
+  overflow: hidden;
+  margin-top: 4px;
+}
+
+.token-search-input {
+  width: 100%;
+  padding: 12px;
+  background: #444c56;
+  border: none;
+  border-bottom: 1px solid #666;
+  color: #fff;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.token-search-input:focus {
+  outline: none;
+  background: #4a5259;
+}
+
+.token-list {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.token-item {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: pointer;
+  border-bottom: 1px solid #333;
+}
+
+.token-item:hover {
+  background: #2a2f37;
+}
+
+.token-item:last-child {
+  border-bottom: none;
+}
+
+.token-info {
+  flex: 1;
+}
+
+.token-symbol {
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.token-name {
+  font-size: 12px;
+  color: #999;
+}
