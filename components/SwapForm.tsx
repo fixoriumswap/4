@@ -46,31 +46,41 @@ export default function SwapForm() {
     async function fetchQuote() {
       setQuote(null);
       setSwapStatus("");
+      setError("");
       if (!fromMint || !toMint || !amount || Number(amount) <= 0 || fromMint === toMint) return;
       setQuoteLoading(true);
       try {
         const amountLamports = Math.floor(Number(amount) * Math.pow(10, TOKEN_DECIMALS[fromMint]));
+        const slippageBps = Math.floor(slippage * 100);
         const params = new URLSearchParams({
           inputMint: fromMint,
           outputMint: toMint,
           amount: amountLamports.toString(),
-          slippageBps: '50'
+          slippageBps: slippageBps.toString()
         });
 
         const response = await fetch(`${JUPITER_API_URL}/quote?${params}`);
         if (response.ok) {
           const quoteData = await response.json();
-          setQuote(quoteData);
+          if (quoteData.error) {
+            setError(quoteData.error);
+            setQuote(null);
+          } else {
+            setQuote(quoteData);
+          }
         } else {
+          const errorData = await response.json().catch(() => null);
+          setError(errorData?.error || 'Failed to get quote');
           setQuote(null);
         }
-      } catch (e) {
+      } catch (e: any) {
+        setError('Network error: ' + (e?.message || 'Unknown error'));
         setQuote(null);
       }
       setQuoteLoading(false);
     }
     fetchQuote();
-  }, [fromMint, toMint, amount]);
+  }, [fromMint, toMint, amount, slippage]);
 
   async function handleSwap(e: React.FormEvent) {
     e.preventDefault();
