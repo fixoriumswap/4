@@ -41,28 +41,42 @@ function SwapFormContent() {
   // Fetch FROM token balance only
   useEffect(() => {
     async function fetchFromBalance() {
-      if (!publicKey) {
+      if (!publicKey || !fromToken.address) {
         setFromBalance(0);
         return;
       }
 
       try {
+        const connectionWithConfig = new Connection(RPC_URL, {
+          commitment: 'confirmed',
+          confirmTransactionInitialTimeout: 30000,
+        });
+
+        console.log('Fetching balance for token:', fromToken.symbol, fromToken.address);
+
         if (fromToken.address === "So11111111111111111111111111111111111111112") {
-          const solBalance = await connection.getBalance(publicKey);
-          setFromBalance(solBalance / Math.pow(10, 9));
+          // SOL balance
+          const solBalance = await connectionWithConfig.getBalance(publicKey);
+          const solAmount = solBalance / Math.pow(10, 9);
+          console.log('SOL Balance:', solAmount);
+          setFromBalance(solAmount);
         } else {
+          // SPL Token balance
           try {
-            const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+            const tokenAccounts = await connectionWithConfig.getParsedTokenAccountsByOwner(publicKey, {
               mint: new PublicKey(fromToken.address)
             });
+
             if (tokenAccounts.value.length > 0) {
               const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
+              console.log(`${fromToken.symbol} Balance:`, balance);
               setFromBalance(balance);
             } else {
+              console.log('No token account found for:', fromToken.symbol);
               setFromBalance(0);
             }
           } catch (tokenError) {
-            console.log('Token account not found or invalid:', fromToken.address);
+            console.log('Error fetching token balance:', tokenError);
             setFromBalance(0);
           }
         }
@@ -73,6 +87,10 @@ function SwapFormContent() {
     }
 
     fetchFromBalance();
+
+    // Refresh balance every 30 seconds
+    const interval = setInterval(fetchFromBalance, 30000);
+    return () => clearInterval(interval);
   }, [publicKey, fromToken]);
 
   // Real-time quote fetching with auto-refresh
