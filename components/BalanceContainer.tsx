@@ -1,38 +1,83 @@
 import React, { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { Connection } from '@solana/web3.js';
 
-const RPC_URL = 'https://api.mainnet-beta.solana.com';
+const RPC_ENDPOINTS = [
+  'https://api.mainnet-beta.solana.com',
+  'https://solana-api.projectserum.com',
+  'https://rpc.ankr.com/solana'
+];
 
 function BalanceContent() {
   const { publicKey, connected, wallet } = useWallet();
+  const { connection } = useConnection();
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   useEffect(() => {
     async function fetchTotalBalance() {
       if (!publicKey || !connected) {
         setTotalBalance(0);
+        setError(null);
         return;
       }
 
       try {
-        const connection = new Connection(RPC_URL, {
-          commitment: 'finalized',
-          confirmTransactionInitialTimeout: 10000,
-        });
+        console.log('Fetching wallet balance for:', publicKey.toString());
+        setError(null);
 
-        console.log('Fetching real-time balance for:', publicKey.toString());
+        // Try primary connection first, then fallback endpoints
+        let lastError: any = null;
+        let balanceFetched = false;
 
-        // Get SOL balance
-        const solBalance = await connection.getBalance(publicKey, 'finalized');
-        const solAmount = solBalance / Math.pow(10, 9);
-        console.log('Current SOL Balance:', solAmount);
+        // Try the wallet adapter connection first
+        try {
+          const solBalance = await connection.getBalance(publicKey, 'confirmed');
+          const solAmount = solBalance / Math.pow(10, 9);
+          console.log('SOL Balance (wallet connection):', solAmount);
+          setTotalBalance(solAmount);
+          setRetryCount(0);
+          balanceFetched = true;
+        } catch (walletConnError) {
+          console.log('Wallet connection failed, trying fallback:', walletConnError);
+          lastError = walletConnError;
+        }
 
-        setTotalBalance(solAmount);
+        // If wallet connection failed, try fallback RPC endpoints
+        if (!balanceFetched) {
+          for (const rpcUrl of RPC_ENDPOINTS) {
+            try {
+              console.log(`Trying RPC endpoint: ${rpcUrl}`);
+              const fallbackConnection = new Connection(rpcUrl, {
+                commitment: 'confirmed',
+                confirmTransactionInitialTimeout: 8000,
+              });
+
+              const solBalance = await fallbackConnection.getBalance(publicKey, 'confirmed');
+              const solAmount = solBalance / Math.pow(10, 9);
+              console.log(`SOL Balance (${rpcUrl}):`, solAmount);
+              setTotalBalance(solAmount);
+              setRetryCount(0);
+              balanceFetched = true;
+              break;
+            } catch (rpcError) {
+              console.log(`RPC endpoint ${rpcUrl} failed:`, rpcError);
+              lastError = rpcError;
+            }
+          }
+        }
+
+        if (!balanceFetched) {
+          throw lastError || new Error('All RPC endpoints failed');
+        }
+
       } catch (error) {
         console.error('Error fetching balance:', error);
-        // Don't reset to 0 on error, keep last known balance
+        setError(`Failed to fetch balance${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
+        setRetryCount(prev => prev + 1);
+        // Don't reset balance to 0 on error, keep last known balance
       }
     }
 
@@ -40,15 +85,16 @@ function BalanceContent() {
       setLoading(true);
       fetchTotalBalance().finally(() => setLoading(false));
 
-      // Set up real-time balance monitoring
-      const interval = setInterval(fetchTotalBalance, 5000); // Update every 5 seconds
+      // Set up balance monitoring with adaptive interval
+      const interval = setInterval(fetchTotalBalance, error ? 10000 : 5000); // Slower refresh on errors
 
       return () => clearInterval(interval);
     } else {
       setTotalBalance(0);
+      setError(null);
       setLoading(false);
     }
-  }, [publicKey, connected]);
+  }, [publicKey, connected, connection, retryCount]);
 
   // Listen for wallet events for immediate updates
   useEffect(() => {
@@ -57,10 +103,17 @@ function BalanceContent() {
         console.log('Wallet account changed, refreshing balance...');
         if (publicKey && connected) {
           // Immediate balance refresh on account change
-          const connection = new Connection(RPC_URL);
-          connection.getBalance(publicKey).then(balance => {
+          setLoading(true);
+          setError(null);
+          connection.getBalance(publicKey, 'confirmed').then(balance => {
             setTotalBalance(balance / Math.pow(10, 9));
-          }).catch(console.error);
+            setRetryCount(0);
+          }).catch(error => {
+            console.error('Account change balance fetch error:', error);
+            setError('Failed to refresh balance');
+          }).finally(() => {
+            setLoading(false);
+          });
         }
       };
 
@@ -75,7 +128,7 @@ function BalanceContent() {
         };
       }
     }
-  }, [wallet, publicKey, connected]);
+  }, [wallet, publicKey, connected, connection]);
 
   if (!publicKey) return null;
 
@@ -87,12 +140,21 @@ function BalanceContent() {
       <div className="balance-content">
         {loading ? (
           <div className="balance-loading">
-            <span className="spinner" /> Loading...
+            <span className="spinner" /> {error ? 'Retrying...' : 'Loading...'}
+          </div>
+        ) : error ? (
+          <div className="balance-error">
+            <div className="balance-amount">
+              <span className="balance-value">{totalBalance.toFixed(4)}</span>
+              <span className="balance-currency">SOL</span>
+            </div>
+            <div className="error-text">{error}</div>
           </div>
         ) : (
           <div className="balance-amount">
             <span className="balance-value">{totalBalance.toFixed(4)}</span>
             <span className="balance-currency">SOL</span>
+            {retryCount === 0 && <span className="live-indicator">●</span>}
           </div>
         )}
       </div>
