@@ -175,8 +175,6 @@ function SwapFormContent() {
 
   return (
     <div className="swap-form card">
-      <h2 className="swap-title">Token Swap</h2>
-
       <div className="swap-section">
         <div className="swap-label-row">
           <label className="swap-label">From Token</label>
@@ -192,7 +190,6 @@ function SwapFormContent() {
       <div className="swap-section">
         <div className="swap-label-row">
           <label className="swap-label">To Token</label>
-          <span className="balance-display">Balance: {toBalance.toFixed(6)} {toToken.symbol}</span>
         </div>
         <TokenSearch
           onTokenSelect={setToToken}
@@ -221,17 +218,6 @@ function SwapFormContent() {
             MAX
           </button>
         </div>
-      </div>
-
-      <div className="swap-section">
-        <label className="swap-label">Receive Address (Optional)</label>
-        <input
-          className="swap-input"
-          type="text"
-          value={receiveAddress}
-          onChange={e => setReceiveAddress(e.target.value)}
-          placeholder="Leave empty to receive in your wallet"
-        />
       </div>
 
       <div className="quote-section">
