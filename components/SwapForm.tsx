@@ -15,7 +15,7 @@ interface Token {
   logoURI?: string;
 }
 
-export default function SwapForm() {
+function SwapFormContent() {
   const { publicKey, wallet, signTransaction } = useWallet();
   const [fromToken, setFromToken] = useState<Token>({
     address: "So11111111111111111111111111111111111111112",
