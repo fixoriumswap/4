@@ -233,7 +233,7 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
           <input
             className="token-search-input"
             type="text"
-            placeholder="Search token or paste contract address..."
+            placeholder="Search token or paste contract address (supports pump.fun tokens)..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             autoFocus
