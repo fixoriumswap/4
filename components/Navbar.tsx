@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import WalletWrapper from './WalletWrapper';
 import { detectPhantomWallet, openPhantomDownload } from '../utils/walletDetection';
 
