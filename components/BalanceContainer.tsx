@@ -5,7 +5,7 @@ import { Connection } from '@solana/web3.js';
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
 
 function BalanceContent() {
-  const { publicKey, connected } = useWallet();
+  const { publicKey, connected, wallet } = useWallet();
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
@@ -16,50 +16,66 @@ function BalanceContent() {
         return;
       }
 
-      setLoading(true);
       try {
         const connection = new Connection(RPC_URL, {
-          commitment: 'confirmed',
-          confirmTransactionInitialTimeout: 30000,
+          commitment: 'finalized',
+          confirmTransactionInitialTimeout: 10000,
         });
 
-        console.log('Fetching balance for:', publicKey.toString());
+        console.log('Fetching real-time balance for:', publicKey.toString());
 
-        // Get SOL balance with retry logic
-        let retries = 3;
-        let solBalance = 0;
-
-        while (retries > 0) {
-          try {
-            solBalance = await connection.getBalance(publicKey);
-            break;
-          } catch (retryError) {
-            console.log(`Balance fetch attempt ${4 - retries} failed:`, retryError);
-            retries--;
-            if (retries > 0) {
-              await new Promise(resolve => setTimeout(resolve, 1000));
-            }
-          }
-        }
-
+        // Get SOL balance
+        const solBalance = await connection.getBalance(publicKey, 'finalized');
         const solAmount = solBalance / Math.pow(10, 9);
-        console.log('SOL Balance:', solAmount);
+        console.log('Current SOL Balance:', solAmount);
 
         setTotalBalance(solAmount);
       } catch (error) {
         console.error('Error fetching balance:', error);
-        setTotalBalance(0);
-      } finally {
-        setLoading(false);
+        // Don't reset to 0 on error, keep last known balance
       }
     }
 
-    fetchTotalBalance();
+    if (connected && publicKey) {
+      setLoading(true);
+      fetchTotalBalance().finally(() => setLoading(false));
 
-    // Refresh balance every 30 seconds
-    const interval = setInterval(fetchTotalBalance, 30000);
-    return () => clearInterval(interval);
+      // Set up real-time balance monitoring
+      const interval = setInterval(fetchTotalBalance, 5000); // Update every 5 seconds
+
+      return () => clearInterval(interval);
+    } else {
+      setTotalBalance(0);
+      setLoading(false);
+    }
   }, [publicKey, connected]);
+
+  // Listen for wallet events for immediate updates
+  useEffect(() => {
+    if (wallet && wallet.adapter) {
+      const handleAccountChange = () => {
+        console.log('Wallet account changed, refreshing balance...');
+        if (publicKey && connected) {
+          // Immediate balance refresh on account change
+          const connection = new Connection(RPC_URL);
+          connection.getBalance(publicKey).then(balance => {
+            setTotalBalance(balance / Math.pow(10, 9));
+          }).catch(console.error);
+        }
+      };
+
+      // Listen for account changes
+      if (wallet.adapter.on) {
+        wallet.adapter.on('accountChanged', handleAccountChange);
+
+        return () => {
+          if (wallet.adapter.off) {
+            wallet.adapter.off('accountChanged', handleAccountChange);
+          }
+        };
+      }
+    }
+  }, [wallet, publicKey, connected]);
 
   if (!publicKey) return null;
 
