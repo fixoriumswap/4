@@ -222,14 +222,15 @@ function SwapFormContent() {
           toMint: toToken.address
         });
 
-        // Enhanced Jupiter API call with more parameters for better compatibility
+        // Enhanced Jupiter API call with better error handling for token compatibility
         const queryParams = new URLSearchParams({
           inputMint: fromToken.address,
           outputMint: toToken.address,
           amount: amountAtoms.toString(),
-          slippageBps: '50',
+          slippageBps: '100', // Increased slippage for better compatibility
           onlyDirectRoutes: 'false',
-          asLegacyTransaction: 'false'
+          asLegacyTransaction: 'false',
+          maxAccounts: '64'
         });
 
         const response = await fetch(`https://quote-api.jup.ag/v6/quote?${queryParams}`, {
