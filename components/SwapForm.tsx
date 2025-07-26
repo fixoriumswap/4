@@ -30,12 +30,10 @@ function SwapFormContent() {
     decimals: 6
   });
   const [amount, setAmount] = useState("");
-  const [receiveAddress, setReceiveAddress] = useState("");
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [swapStatus, setSwapStatus] = useState("");
   const [fromBalance, setFromBalance] = useState<number>(0);
-  const [toBalance, setToBalance] = useState<number>(0);
 
   const jupiterQuoteApi = createJupiterApiClient();
   const connection = new Connection(RPC_URL);
