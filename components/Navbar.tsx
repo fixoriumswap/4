@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import WalletWrapper from './WalletWrapper';
-import { detectPhantomWallet, openPhantomDownload, isMobileDevice } from '../utils/walletDetection';
+import WalletConnect from './WalletConnect';
+import SendReceive from './SendReceive';
+import Settings from './Settings';
+import AIHelpline from './AIHelpline';
 
 function WalletSection() {
-  const { publicKey, disconnect, select, wallets, connect } = useWallet();
-  const [isPhantomDetected, setIsPhantomDetected] = useState(false);
-  const [connecting, setConnecting] = useState(false);
+  const { publicKey, disconnect } = useWallet();
+  const [showWalletConnect, setShowWalletConnect] = useState(false);
+  const [showSendReceive, setShowSendReceive] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
+  const [showAIHelpline, setShowAIHelpline] = useState(false);
+  const [slippage, setSlippage] = useState(0.5); // Default 0.5% slippage
   const address = publicKey?.toBase58();
-
-  useEffect(() => {
-    setIsPhantomDetected(detectPhantomWallet());
-  }, []);
 
   function shortAddr(addr: string) {
     return addr ? `${addr.slice(0,4)}...${addr.slice(-4)}` : '';
@@ -24,91 +26,91 @@ function WalletSection() {
     }
   }
 
-  async function handleConnectWallet() {
-    if (connecting) return;
+  const handleConnectWallet = () => {
+    setShowWalletConnect(true);
+  };
 
-    setConnecting(true);
-    try {
-      // Force re-check Phantom detection
-      const phantomDetected = detectPhantomWallet();
-      console.log('Phantom detected on click:', phantomDetected);
-
-      if (phantomDetected) {
-        // Direct Phantom connection for better compatibility
-        const phantom = getPhantomWallet();
-        if (phantom) {
-          try {
-            console.log('Connecting directly to Phantom...');
-            const response = await phantom.connect();
-            console.log('Phantom connection response:', response);
-
-            // Also ensure the wallet adapter knows about this
-            const phantomAdapter = wallets.find(wallet => wallet.adapter.name === 'Phantom');
-            if (phantomAdapter) {
-              select(phantomAdapter.adapter.name);
-            }
-
-            // The wallet should now be connected
-            console.log('Phantom connected successfully');
-          } catch (phantomError) {
-            console.error('Direct Phantom connection failed:', phantomError);
-
-            // Fallback to adapter connection
-            const phantomWallet = wallets.find(wallet => wallet.adapter.name === 'Phantom');
-            if (phantomWallet) {
-              select(phantomWallet.adapter.name);
-              await connect();
-            }
-          }
-        }
-      } else {
-        // Handle case when Phantom is not detected
-        if (isMobileDevice()) {
-          // For mobile, try to open Phantom app with deep link
-          const currentUrl = window.location.href;
-          const phantomUrl = `https://phantom.app/ul/browse/${encodeURIComponent(currentUrl)}?ref=${encodeURIComponent(window.location.origin)}`;
-
-          alert('Redirecting to Phantom app...');
-          window.location.href = phantomUrl;
-        } else {
-          // For desktop, prompt to install Phantom extension
-          if (confirm('Phantom wallet extension not detected in Brave browser. Please install Phantom extension and refresh the page.')) {
-            openPhantomDownload();
-          }
-        }
-      }
-    } catch (error) {
-      console.error('Wallet connection error:', error);
-      alert(`Failed to connect wallet: ${error.message || 'Please try again.'}`);
-    } finally {
-      setConnecting(false);
-    }
-  }
+  const handleSlippageChange = (newSlippage: number) => {
+    setSlippage(newSlippage);
+    console.log('Slippage updated to:', newSlippage + '%');
+  };
 
   return (
-    <div className="navbar-right">
-      {!publicKey ? (
-        <button
-          className="connect-wallet-btn"
-          onClick={handleConnectWallet}
-          disabled={connecting}
-        >
-          {connecting ? 'Connecting...' : 'Connect Wallet'}
-        </button>
-      ) : (
-        <div className="wallet-connected">
-          <span className="wallet-address" title={address}>
-            {shortAddr(address!)}
-          </span>
-          <button className="copy-btn" onClick={copyAddress}>
-            Copy
+    <>
+      <div className="navbar-right">
+        {/* Feature buttons - always visible */}
+        <div className="feature-buttons">
+          <button 
+            className="feature-btn settings-btn"
+            onClick={() => setShowSettings(true)}
+            title="Settings"
+          >
+            ⚙️
           </button>
-          <button className="disconnect-btn" onClick={() => disconnect()}>
-            Disconnect
+          
+          <button 
+            className="feature-btn helpline-btn"
+            onClick={() => setShowAIHelpline(true)}
+            title="24/7 AI Support"
+          >
+            🤖
           </button>
+          
+          {publicKey && (
+            <button 
+              className="feature-btn send-receive-btn"
+              onClick={() => setShowSendReceive(true)}
+              title="Send & Receive SOL"
+            >
+              💸
+            </button>
+          )}
         </div>
+
+        {/* Wallet section */}
+        {!publicKey ? (
+          <button
+            className="connect-wallet-btn"
+            onClick={handleConnectWallet}
+          >
+            Connect Wallet
+          </button>
+        ) : (
+          <div className="wallet-connected">
+            <span className="wallet-address" title={address}>
+              {shortAddr(address!)}
+            </span>
+            <button className="copy-btn" onClick={copyAddress}>
+              Copy
+            </button>
+            <button className="disconnect-btn" onClick={() => disconnect()}>
+              Disconnect
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Modals */}
+      {showWalletConnect && (
+        <WalletConnect onClose={() => setShowWalletConnect(false)} />
       )}
-    </div>
+      
+      {showSendReceive && (
+        <SendReceive onClose={() => setShowSendReceive(false)} />
+      )}
+      
+      {showSettings && (
+        <Settings 
+          onClose={() => setShowSettings(false)}
+          onSlippageChange={handleSlippageChange}
+          currentSlippage={slippage}
+        />
+      )}
+      
+      {showAIHelpline && (
+        <AIHelpline onClose={() => setShowAIHelpline(false)} />
+      )}
+    </>
   );
 }
 
