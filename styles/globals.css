@@ -140,6 +140,88 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; }
   color: #999;
   cursor: not-allowed;
 }
+.slippage-controls {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+  align-items: center;
+}
+
+.slippage-btn {
+  padding: 6px 12px;
+  background: #444c56;
+  border: 1px solid #555f70;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+  cursor: pointer;
+}
+
+.slippage-btn.active {
+  background: #29d6b6;
+  color: #23272f;
+  border-color: #29d6b6;
+}
+
+.slippage-btn:hover {
+  background: #555f70;
+}
+
+.slippage-btn.active:hover {
+  background: #22bca7;
+}
+
+.slippage-input {
+  width: 80px;
+  padding: 6px 8px;
+  background: #444c56;
+  border: 1px solid #555f70;
+  border-radius: 6px;
+  color: #fff;
+  font-size: 12px;
+}
+
+.error-message {
+  background: #ff4444;
+  color: white;
+  padding: 10px;
+  border-radius: 6px;
+  margin: 10px 0;
+  font-size: 14px;
+}
+
+.success-message {
+  background: #44ff44;
+  color: #23272f;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.status-message {
+  background: #444c56;
+  color: #fff;
+  padding: 10px;
+  border-radius: 6px;
+  margin-top: 10px;
+}
+
+.connect-message {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.connect-message h3 {
+  color: #29d6b6;
+  margin-bottom: 10px;
+}
+
+.connect-message p {
+  color: #ccc;
+  margin: 0;
+}
+
 #swapRatio {
   margin: 16px 0;
   padding: 12px;
@@ -148,5 +230,21 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; }
   text-align: center;
   min-height: 20px;
 }
+
+.quote-details {
+  margin-top: 8px;
+  font-size: 12px;
+  color: #ccc;
+}
+
+.high-impact {
+  color: #ff4444;
+  font-weight: bold;
+}
+
+.low-impact {
+  color: #44ff44;
+}
+
 .spinner { display:inline-block;width:20px;height:20px;border:2px solid #ccc;border-radius:50%;border-top:2px solid #29d6b6;animation:spin 0.8s linear infinite;vertical-align:middle;}
 @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
