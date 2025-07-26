@@ -43,6 +43,35 @@ function SwapFormContent() {
 
   const jupiterQuoteApi = createJupiterApiClient();
 
+  // Listen for token selection from trending tokens
+  useEffect(() => {
+    const handleTokenSelection = (event: CustomEvent) => {
+      const { fromToken: newFromToken, toToken: newToToken } = event.detail;
+      if (newFromToken) setFromToken(newFromToken);
+      if (newToToken) setToToken(newToToken);
+      setAmount(''); // Reset amount
+    };
+
+    window.addEventListener('tokenSelected', handleTokenSelection as EventListener);
+
+    // Check localStorage for any pending token selection
+    const savedSwapData = localStorage.getItem('swapData');
+    if (savedSwapData) {
+      try {
+        const { fromToken: newFromToken, toToken: newToToken } = JSON.parse(savedSwapData);
+        if (newFromToken) setFromToken(newFromToken);
+        if (newToToken) setToToken(newToToken);
+        localStorage.removeItem('swapData'); // Clear after use
+      } catch (error) {
+        console.error('Error parsing saved swap data:', error);
+      }
+    }
+
+    return () => {
+      window.removeEventListener('tokenSelected', handleTokenSelection as EventListener);
+    };
+  }, []);
+
   // Fetch FROM token balance with real-time updates and robust error handling
   useEffect(() => {
     async function fetchFromBalance() {
