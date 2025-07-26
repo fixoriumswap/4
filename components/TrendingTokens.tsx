@@ -23,16 +23,16 @@ export default function TrendingTokens({ onClose }: TrendingTokensProps) {
   const [selectedToken, setSelectedToken] = useState<TrendingToken | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Solana network trending tokens with contract addresses
+  // Solana network trending tokens with verified Jupiter-compatible addresses
   const solanaTokens = [
     { id: 'solana', address: 'So11111111111111111111111111111111111111112' },
     { id: 'usd-coin', address: 'EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v' },
+    { id: 'tether', address: 'Es9vMFrzaCERmJfrF4H2FYD4KCoNkY11McCe8BenwNYB' },
     { id: 'bonk', address: 'DezXAZ8z7PnrnRJjz3wXBoRhwTLdMPkqhuBczetogeoK' },
     { id: 'dogwifcoin', address: 'EKpQGSJtjMFqKZ9KQanSqYXRcF8fBtUk6goG7zcX3New' },
-    { id: 'popcat', address: '7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr' },
     { id: 'jito-governance-token', address: 'J1toso1uCk3RLmjorhTtrVwY9HJ7X8V9yYac6Y7kGCPn' },
     { id: 'jupiter-exchange-solana', address: 'JUPyiwrYJFskUPiHa7hkeR8VUtAeFoSYbKedZNsDvCN' },
-    { id: 'pyth-network', address: 'HZ1JovNiVvGrGNiiYvEozEVgZ58xaU3RKwX8eACQBCt3' }
+    { id: 'raydium', address: '4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R' }
   ];
 
   useEffect(() => {
