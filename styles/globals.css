@@ -1,4 +1,4 @@
- body {
+body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background: #181a20;
@@ -59,5 +59,47 @@ a { color: inherit; text-decoration: none; }
 .logo { height: 36px; width: 36px; margin-right: 10px; }
 .title { font-size: 24px; font-weight: bold; }
 main { max-width: 600px; margin: 32px auto; padding: 0 16px; }
+.swap-form { margin: 32px auto; max-width: 400px; }
+.swap-input {
+  width: 100%;
+  padding: 12px;
+  margin-top: 6px;
+  background: #444c56;
+  border: 1px solid #555f70;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
+  box-sizing: border-box;
+}
+.swap-input:focus {
+  outline: none;
+  border-color: #29d6b6;
+}
+.swap-btn {
+  width: 100%;
+  padding: 14px;
+  margin-top: 20px;
+  background: #29d6b6;
+  color: #23272f;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 16px;
+  cursor: pointer;
+}
+.swap-btn:hover { background: #22bca7; }
+.swap-btn:disabled {
+  background: #555f70;
+  color: #999;
+  cursor: not-allowed;
+}
+#swapRatio {
+  margin: 16px 0;
+  padding: 12px;
+  background: #1a1d23;
+  border-radius: 8px;
+  text-align: center;
+  min-height: 20px;
+}
 .spinner { display:inline-block;width:20px;height:20px;border:2px solid #ccc;border-radius:50%;border-top:2px solid #29d6b6;animation:spin 0.8s linear infinite;vertical-align:middle;}
 @keyframes spin { 0%{transform:rotate(0deg);} 100%{transform:rotate(360deg);} }
