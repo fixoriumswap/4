@@ -55,22 +55,37 @@ export default function SwapForm() {
     e.preventDefault();
     setSwapStatus("Preparing swap...");
     try {
-      if (!quote || !publicKey || !wallet) return setSwapStatus("No route or wallet.");
-      const jupiter = await Jupiter.load({
-        connection: new Connection(RPC_URL),
-        cluster: 'mainnet-beta',
-        userPublicKey: publicKey,
-        wrapUnwrapSOL: true
-      });
-      const swapResult = await jupiter.exchange({
-        routeInfo: quote,
-        wallet: wallet
-      });
-      if (swapResult.error) {
-        setSwapStatus("Swap error: " + swapResult.error.message);
-      } else {
-        setSwapStatus("Swap submitted! Tx: " + swapResult.txid);
+      if (!quote || !publicKey || !wallet || !signTransaction) {
+        return setSwapStatus("No route or wallet.");
       }
+
+      const connection = new Connection(RPC_URL);
+
+      // Get swap transaction
+      const swapResult = await jupiterQuoteApi.swapPost({
+        swapRequest: {
+          quoteResponse: quote,
+          userPublicKey: publicKey.toString(),
+          wrapAndUnwrapSol: true,
+        }
+      });
+
+      // Deserialize the transaction
+      const swapTransactionBuf = Buffer.from(swapResult.swapTransaction, 'base64');
+      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+
+      // Sign the transaction
+      const signedTransaction = await signTransaction(transaction);
+
+      // Execute the transaction
+      const txid = await connection.sendTransaction(signedTransaction);
+
+      setSwapStatus("Swap submitted! Tx: " + txid);
+
+      // Confirm transaction
+      await connection.confirmTransaction(txid);
+      setSwapStatus("Swap confirmed! Tx: " + txid);
+
     } catch (e: any) {
       setSwapStatus("Swap failed: " + (e?.message || e));
     }
