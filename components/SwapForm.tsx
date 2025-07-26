@@ -88,28 +88,43 @@ export default function SwapForm() {
     fetchBalances();
   }, [publicKey, fromToken, toToken]);
 
+  // Real-time quote fetching with auto-refresh
   useEffect(() => {
     async function fetchQuote() {
       setQuote(null);
       setSwapStatus("");
-      if (!fromMint || !toMint || !amount || Number(amount) <= 0 || fromMint === toMint) return;
+      if (!fromToken.address || !toToken.address || !amount || Number(amount) <= 0 || fromToken.address === toToken.address) return;
+
       setQuoteLoading(true);
       try {
-        const amountAtoms = Math.floor(Number(amount) * Math.pow(10, TOKEN_DECIMALS[fromMint]));
+        const amountAtoms = Math.floor(Number(amount) * Math.pow(10, fromToken.decimals));
         const quote = await jupiterQuoteApi.quoteGet({
-          inputMint: fromMint,
-          outputMint: toMint,
+          inputMint: fromToken.address,
+          outputMint: toToken.address,
           amount: amountAtoms,
           slippageBps: 50 // 0.5%
         });
         setQuote(quote);
       } catch (e) {
+        console.error('Quote error:', e);
         setQuote(null);
       }
       setQuoteLoading(false);
     }
+
     fetchQuote();
-  }, [fromMint, toMint, amount]);
+
+    // Auto-refresh quotes every 10 seconds
+    const interval = setInterval(fetchQuote, 10000);
+    return () => clearInterval(interval);
+  }, [fromToken, toToken, amount]);
+
+  // Set receive address to user's wallet by default
+  useEffect(() => {
+    if (publicKey && !receiveAddress) {
+      setReceiveAddress(publicKey.toString());
+    }
+  }, [publicKey]);
 
   async function handleSwap(e: React.FormEvent) {
     e.preventDefault();
