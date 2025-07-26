@@ -483,3 +483,41 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   color: #999;
   font-weight: 500;
 }
+
+.balance-error {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.error-text {
+  font-size: 12px;
+  color: #f73e3e;
+  opacity: 0.8;
+}
+
+.live-indicator {
+  color: #29d6b6;
+  font-size: 12px;
+  margin-left: 4px;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.balance-error-indicator {
+  margin-left: 4px;
+  font-size: 12px;
+  cursor: help;
+}
+
+.search-hint {
+  font-size: 11px;
+  color: #999;
+  padding: 8px 12px;
+  border-bottom: 1px solid #333;
+  background: #2a2f37;
+}
