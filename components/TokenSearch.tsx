@@ -43,6 +43,20 @@ const POPULAR_TOKENS: Token[] = [
     name: "dogwifhat",
     decimals: 6,
     logoURI: "https://bafkreicrjgjei47pz6ue5d3mi5kgurjclqxfyqfhywu5w6fhmzpe6q5afm.ipfs.nftstorage.link"
+  },
+  {
+    address: "7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr",
+    symbol: "POPCAT",
+    name: "Popcat",
+    decimals: 9,
+    logoURI: "https://dd.dexscreener.com/ds-data/tokens/solana/7GCihgDB8fe6KNjn2MYtkzZcRjQy3t9GHdC8uHYmW2hr.png"
+  },
+  {
+    address: "HZ1znC9XBasm9AMDhGocd9EHSyH8Pyj1EUdiPb4WnZjo",
+    symbol: "MOTHER",
+    name: "MOTHER",
+    decimals: 6,
+    logoURI: "https://dd.dexscreener.com/ds-data/tokens/solana/HZ1znC9XBasm9AMDhGocd9EHSyH8Pyj1EUdiPb4WnZjo.png"
   }
 ];
 
@@ -55,17 +69,24 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
   const connection = new Connection('https://api.mainnet-beta.solana.com');
 
   useEffect(() => {
-    // Trigger search for potential Solana addresses (including pump.fun tokens)
+    // Enhanced search for Solana addresses (pump.fun tokens and others)
     if (searchTerm.length >= 32 && searchTerm.length <= 44 && /^[1-9A-HJ-NP-Za-km-z]+$/.test(searchTerm)) {
       // Looks like a Solana address, search for it
       const timeoutId = setTimeout(() => {
         searchTokenByAddress(searchTerm);
-      }, 500); // Debounce search
+      }, 300); // Reduced debounce for faster response
 
       return () => clearTimeout(timeoutId);
     } else if (searchTerm.length === 0) {
       // Reset to popular tokens when search is cleared
       setTokens(POPULAR_TOKENS);
+    } else if (searchTerm.length >= 2) {
+      // Search for tokens by symbol/name with minimum 2 characters
+      const timeoutId = setTimeout(() => {
+        searchTokensByName(searchTerm);
+      }, 300);
+
+      return () => clearTimeout(timeoutId);
     } else if (searchTerm.length > 0) {
       // Filter popular tokens by search term
       const filtered = POPULAR_TOKENS.filter(token =>
@@ -75,6 +96,55 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
       setTokens(filtered.length > 0 ? filtered : POPULAR_TOKENS);
     }
   }, [searchTerm]);
+
+  async function searchTokensByName(name: string) {
+    try {
+      setLoading(true);
+      console.log('Searching tokens by name:', name);
+
+      let foundTokens: Token[] = [];
+
+      // First filter popular tokens
+      const filtered = POPULAR_TOKENS.filter(token =>
+        token.symbol.toLowerCase().includes(name.toLowerCase()) ||
+        token.name.toLowerCase().includes(name.toLowerCase())
+      );
+      foundTokens = [...filtered];
+
+      // Search Jupiter token list for more tokens
+      try {
+        const response = await fetch('https://token.jup.ag/all');
+        if (response.ok) {
+          const allTokens = await response.json();
+          const matchingTokens = allTokens
+            .filter((token: any) =>
+              (token.symbol?.toLowerCase().includes(name.toLowerCase()) ||
+               token.name?.toLowerCase().includes(name.toLowerCase())) &&
+              !foundTokens.find(existing => existing.address === token.address)
+            )
+            .slice(0, 20) // Limit results
+            .map((token: any) => ({
+              address: token.address,
+              symbol: token.symbol || `${token.address.slice(0, 4)}...${token.address.slice(-4)}`,
+              name: token.name || `Token ${token.address.slice(0, 8)}`,
+              decimals: token.decimals || 9,
+              logoURI: token.logoURI
+            }));
+
+          foundTokens = [...foundTokens, ...matchingTokens];
+        }
+      } catch (error) {
+        console.log('Jupiter search error:', error);
+      }
+
+      setTokens(foundTokens.length > 0 ? foundTokens : POPULAR_TOKENS);
+    } catch (error) {
+      console.error('Token name search error:', error);
+      setTokens(POPULAR_TOKENS);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   async function searchTokenByAddress(address: string) {
     try {
@@ -106,7 +176,7 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
 
         // Try multiple sources for token metadata
 
-        // 1. Try Jupiter Token List API
+        // 1. Try Jupiter Token List API (best for pump.fun and new tokens)
         try {
           console.log('Trying Jupiter token list...');
           const jupiterResponse = await fetch(`https://token.jup.ag/token/${address}`);
@@ -124,6 +194,31 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
           }
         } catch (jupiterError) {
           console.log('Jupiter API error:', jupiterError);
+        }
+
+        // 1.5. Try Jupiter all tokens endpoint for comprehensive search
+        if (!tokenFound) {
+          try {
+            console.log('Trying Jupiter all tokens...');
+            const allTokensResponse = await fetch('https://token.jup.ag/all');
+            if (allTokensResponse.ok) {
+              const allTokens = await allTokensResponse.json();
+              const foundToken = allTokens.find((token: any) => token.address === address);
+              if (foundToken) {
+                customToken = {
+                  address: address,
+                  symbol: foundToken.symbol || `${address.slice(0, 4)}...${address.slice(-4)}`,
+                  name: foundToken.name || `Token ${address.slice(0, 8)}`,
+                  decimals: foundToken.decimals || 9,
+                  logoURI: foundToken.logoURI
+                };
+                tokenFound = true;
+                console.log('Found token in Jupiter all tokens:', customToken);
+              }
+            }
+          } catch (allTokensError) {
+            console.log('Jupiter all tokens error:', allTokensError);
+          }
         }
 
         // 2. Try Solana Token List (includes many pump.fun tokens)
@@ -233,11 +328,14 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
           <input
             className="token-search-input"
             type="text"
-            placeholder="Search token or paste contract address (supports pump.fun tokens)..."
+            placeholder="Search by name/symbol or paste contract address..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             autoFocus
           />
+          <div className="search-hint">
+            💡 Supports all Solana tokens including pump.fun memes
+          </div>
           
           <div className="token-list">
             {loading && (
