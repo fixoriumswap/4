@@ -246,6 +246,14 @@ function SwapFormContent() {
           toMint: toToken.address
         });
 
+        // Validate tokens first
+        const { fromSupported, toSupported } = await validateTokens(fromToken.address, toToken.address);
+
+        if (!fromSupported || !toSupported) {
+          const unsupportedToken = !fromSupported ? fromToken.symbol : toToken.symbol;
+          setSwapStatus(`⚠️ ${unsupportedToken} may not be available for trading. Try a different token.`);
+        }
+
         // Enhanced Jupiter API call with better error handling for token compatibility
         const queryParams = new URLSearchParams({
           inputMint: fromToken.address,
