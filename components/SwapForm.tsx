@@ -39,6 +39,55 @@ export default function SwapForm() {
   const jupiterQuoteApi = createJupiterApiClient();
   const connection = new Connection(RPC_URL);
 
+  // Fetch token balances
+  useEffect(() => {
+    async function fetchBalances() {
+      if (!publicKey) {
+        setFromBalance(0);
+        setToBalance(0);
+        return;
+      }
+
+      try {
+        // Fetch FROM token balance
+        if (fromToken.address === "So11111111111111111111111111111111111111112") {
+          const solBalance = await connection.getBalance(publicKey);
+          setFromBalance(solBalance / Math.pow(10, 9));
+        } else {
+          const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+            mint: new PublicKey(fromToken.address)
+          });
+          if (tokenAccounts.value.length > 0) {
+            const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
+            setFromBalance(balance);
+          } else {
+            setFromBalance(0);
+          }
+        }
+
+        // Fetch TO token balance
+        if (toToken.address === "So11111111111111111111111111111111111111112") {
+          const solBalance = await connection.getBalance(publicKey);
+          setToBalance(solBalance / Math.pow(10, 9));
+        } else {
+          const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
+            mint: new PublicKey(toToken.address)
+          });
+          if (tokenAccounts.value.length > 0) {
+            const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
+            setToBalance(balance);
+          } else {
+            setToBalance(0);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching balances:', error);
+      }
+    }
+
+    fetchBalances();
+  }, [publicKey, fromToken, toToken]);
+
   useEffect(() => {
     async function fetchQuote() {
       setQuote(null);
