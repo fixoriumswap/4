@@ -1,10 +1,10 @@
- import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey } from '@solana/web3.js';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
 
-export default function TokenBalances() {
+function TokenBalancesContent() {
   const { publicKey } = useWallet();
   const [solBalance, setSolBalance] = useState<number | null>(null);
   const [tokens, setTokens] = useState<{mint: string, symbol: string, uiAmount: number}[]>([]);
