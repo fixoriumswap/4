@@ -313,3 +313,103 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   font-size: 12px;
   color: #999;
 }
+
+/* Enhanced Swap Form Styles */
+.swap-title {
+  text-align: center;
+  margin: 0 0 24px 0;
+  color: #29d6b6;
+  font-size: 24px;
+}
+
+.swap-section {
+  margin-bottom: 20px;
+}
+
+.swap-label-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.balance-display {
+  font-size: 12px;
+  color: #999;
+}
+
+.amount-input-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.max-btn {
+  position: absolute;
+  right: 8px;
+  background: #29d6b6;
+  color: #23272f;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.max-btn:hover {
+  background: #22bca7;
+}
+
+.quote-section {
+  background: #2a2f37;
+  border-radius: 8px;
+  padding: 16px;
+  margin: 20px 0;
+  min-height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-quote {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #999;
+}
+
+.quote-details {
+  width: 100%;
+}
+
+.quote-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.quote-row:last-child {
+  margin-bottom: 0;
+}
+
+.quote-row.small {
+  font-size: 12px;
+  color: #999;
+}
+
+.no-quote {
+  text-align: center;
+  color: #f73e3e;
+}
+
+.swap-status {
+  margin-top: 16px;
+  padding: 12px;
+  background: #2a2f37;
+  border-radius: 8px;
+  font-size: 14px;
+  text-align: center;
+  word-break: break-all;
+}
