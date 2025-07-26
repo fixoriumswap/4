@@ -1,18 +1,13 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import WalletWrapper from './WalletWrapper';
 import WalletConnect from './WalletConnect';
-import SendReceive from './SendReceive';
-import Settings from './Settings';
-import AIHelpline from './AIHelpline';
+import TrendingTokens from './TrendingTokens';
 
 function WalletSection() {
   const { publicKey, disconnect } = useWallet();
   const [showWalletConnect, setShowWalletConnect] = useState(false);
-  const [showSendReceive, setShowSendReceive] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [showAIHelpline, setShowAIHelpline] = useState(false);
-  const [slippage, setSlippage] = useState(0.5); // Default 0.5% slippage
+  const [showTrending, setShowTrending] = useState(false);
   const address = publicKey?.toBase58();
 
   function shortAddr(addr: string) {
@@ -30,42 +25,17 @@ function WalletSection() {
     setShowWalletConnect(true);
   };
 
-  const handleSlippageChange = (newSlippage: number) => {
-    setSlippage(newSlippage);
-    console.log('Slippage updated to:', newSlippage + '%');
-  };
-
   return (
     <>
       <div className="navbar-right">
-        {/* Feature buttons - always visible */}
-        <div className="feature-buttons">
-          <button 
-            className="feature-btn settings-btn"
-            onClick={() => setShowSettings(true)}
-            title="Settings"
-          >
-            ⚙️
-          </button>
-          
-          <button 
-            className="feature-btn helpline-btn"
-            onClick={() => setShowAIHelpline(true)}
-            title="24/7 AI Support"
-          >
-            🤖
-          </button>
-          
-          {publicKey && (
-            <button 
-              className="feature-btn send-receive-btn"
-              onClick={() => setShowSendReceive(true)}
-              title="Send & Receive SOL"
-            >
-              💸
-            </button>
-          )}
-        </div>
+        {/* Trending button */}
+        <button 
+          className="trending-btn"
+          onClick={() => setShowTrending(true)}
+          title="Trending Tokens"
+        >
+          📈 Trending
+        </button>
 
         {/* Wallet section */}
         {!publicKey ? (
@@ -95,20 +65,8 @@ function WalletSection() {
         <WalletConnect onClose={() => setShowWalletConnect(false)} />
       )}
       
-      {showSendReceive && (
-        <SendReceive onClose={() => setShowSendReceive(false)} />
-      )}
-      
-      {showSettings && (
-        <Settings 
-          onClose={() => setShowSettings(false)}
-          onSlippageChange={handleSlippageChange}
-          currentSlippage={slippage}
-        />
-      )}
-      
-      {showAIHelpline && (
-        <AIHelpline onClose={() => setShowAIHelpline(false)} />
+      {showTrending && (
+        <TrendingTokens onClose={() => setShowTrending(false)} />
       )}
     </>
   );
