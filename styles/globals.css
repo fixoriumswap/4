@@ -413,3 +413,48 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   text-align: center;
   word-break: break-all;
 }
+
+/* Balance Container Styles */
+.balance-container {
+  background: #23272f;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid #333;
+}
+
+.balance-header h3 {
+  margin: 0;
+  color: #29d6b6;
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.balance-content {
+  margin-top: 12px;
+}
+
+.balance-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #999;
+}
+
+.balance-amount {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.balance-value {
+  font-size: 28px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.balance-currency {
+  font-size: 16px;
+  color: #999;
+  font-weight: 500;
+}
