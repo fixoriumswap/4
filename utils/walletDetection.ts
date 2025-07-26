@@ -23,6 +23,11 @@ export function detectPhantomWallet(): boolean {
 export function getPhantomWallet() {
   if (typeof window === 'undefined') return null;
 
+  // Try multiple detection methods
+  if (window.phantom && window.phantom.solana && window.phantom.solana.isPhantom) {
+    return window.phantom.solana;
+  }
+
   if (window.solana && window.solana.isPhantom) {
     return window.solana;
   }
