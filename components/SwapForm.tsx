@@ -278,7 +278,23 @@ function SwapFormContent() {
         if (!response.ok) {
           const errorText = await response.text();
           console.error('Quote API error response:', errorText);
-          throw new Error(`Quote API error: ${response.status} - ${errorText}`);
+
+          // Parse error for better user feedback
+          let userFriendlyError = 'Unable to find route';
+          try {
+            const errorData = JSON.parse(errorText);
+            if (errorData.error?.includes('not tradable')) {
+              userFriendlyError = `${fromToken.symbol} or ${toToken.symbol} is not available for trading. Please try different tokens.`;
+            } else if (errorData.error?.includes('insufficient liquidity')) {
+              userFriendlyError = 'Insufficient liquidity for this trade. Try a smaller amount or different tokens.';
+            } else if (errorData.error?.includes('amount too small')) {
+              userFriendlyError = 'Trade amount too small. Please increase the amount.';
+            }
+          } catch (parseError) {
+            // Use original error if parsing fails
+          }
+
+          throw new Error(userFriendlyError);
         }
 
         const quote = await response.json();
