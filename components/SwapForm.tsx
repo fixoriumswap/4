@@ -296,3 +296,24 @@ function SwapFormContent() {
     </div>
   );
 }
+
+export default function SwapForm() {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <div className="swap-form card">
+        <h2 className="swap-title">Token Swap</h2>
+        <div style={{ textAlign: 'center', padding: '40px' }}>
+          <span className="spinner" /> Loading...
+        </div>
+      </div>
+    );
+  }
+
+  return <SwapFormContent />;
+}
