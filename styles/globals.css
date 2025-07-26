@@ -1866,12 +1866,6 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
     max-height: 95vh;
   }
 
-  .trending-btn {
-    padding: 8px 12px;
-    font-size: 12px;
-    margin-right: 8px;
-  }
-
   .wallet-buttons {
     gap: 12px;
   }
@@ -1892,27 +1886,5 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
 
   .action-buttons {
     flex-direction: column;
-  }
-
-  .bottom-bar-content {
-    justify-content: space-between;
-    padding: 0 8px;
-  }
-
-  .bottom-btn {
-    min-width: 60px;
-    padding: 6px 8px;
-  }
-
-  .btn-icon {
-    font-size: 20px;
-  }
-
-  .bottom-btn span {
-    font-size: 10px;
-  }
-
-  .connection-indicator {
-    right: 8px;
   }
 }
