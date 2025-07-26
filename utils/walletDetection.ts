@@ -2,10 +2,22 @@
 export function detectPhantomWallet(): boolean {
   if (typeof window === 'undefined') return false;
 
-  // Check if Phantom is installed (browser extension)
-  const isPhantomInstalled = window.solana && window.solana.isPhantom;
+  // Enhanced detection for Brave browser and other Chromium-based browsers
+  // Check multiple possible injection points
+  const phantomDetected = (
+    // Standard Phantom injection
+    (window.solana && window.solana.isPhantom) ||
+    // Alternative detection for Brave/Chromium
+    (window.phantom && window.phantom.solana && window.phantom.solana.isPhantom) ||
+    // Check if Phantom is in the providers array
+    (window.phantom && window.phantom.solana)
+  );
 
-  return !!isPhantomInstalled;
+  console.log('Phantom detection result:', phantomDetected);
+  console.log('Window.solana:', window.solana);
+  console.log('Window.phantom:', window.phantom);
+
+  return !!phantomDetected;
 }
 
 export function getPhantomWallet() {
