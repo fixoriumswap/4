@@ -2,7 +2,6 @@ import React from 'react';
 import Navbar from '../components/Navbar';
 import BalanceContainer from '../components/BalanceContainer';
 import SwapForm from '../components/SwapForm';
-import BottomBar from '../components/BottomBar';
 import { useWallet } from '@solana/wallet-adapter-react';
 
 export default function Home() {
