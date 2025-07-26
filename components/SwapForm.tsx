@@ -1,11 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { createJupiterApiClient, QuoteResponse } from '@jup-ag/api';
 import TokenSearch from './TokenSearch';
 import WalletWrapper from './WalletWrapper';
 
-const RPC_URL = 'https://api.mainnet-beta.solana.com';
+const RPC_ENDPOINTS = [
+  'https://api.mainnet-beta.solana.com',
+  'https://solana-api.projectserum.com',
+  'https://rpc.ankr.com/solana'
+];
 
 interface Token {
   address: string;
@@ -17,6 +21,7 @@ interface Token {
 
 function SwapFormContent() {
   const { publicKey, wallet, signTransaction } = useWallet();
+  const { connection } = useConnection();
   const [fromToken, setFromToken] = useState<Token>({
     address: "So11111111111111111111111111111111111111112",
     symbol: "SOL",
@@ -34,66 +39,136 @@ function SwapFormContent() {
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [swapStatus, setSwapStatus] = useState("");
   const [fromBalance, setFromBalance] = useState<number>(0);
+  const [balanceError, setBalanceError] = useState<string | null>(null);
 
   const jupiterQuoteApi = createJupiterApiClient();
-  const connection = new Connection(RPC_URL);
 
-  // Fetch FROM token balance with real-time updates
+  // Fetch FROM token balance with real-time updates and robust error handling
   useEffect(() => {
     async function fetchFromBalance() {
       if (!publicKey || !fromToken.address) {
         setFromBalance(0);
+        setBalanceError(null);
         return;
       }
 
       try {
-        const connectionWithConfig = new Connection(RPC_URL, {
-          commitment: 'finalized',
-          confirmTransactionInitialTimeout: 10000,
-        });
+        console.log('Fetching balance for token:', fromToken.symbol, fromToken.address);
+        setBalanceError(null);
 
-        console.log('Fetching real-time balance for token:', fromToken.symbol, fromToken.address);
+        let balanceFetched = false;
+        let lastError: any = null;
 
         if (fromToken.address === "So11111111111111111111111111111111111111112") {
-          // SOL balance
-          const solBalance = await connectionWithConfig.getBalance(publicKey, 'finalized');
-          const solAmount = solBalance / Math.pow(10, 9);
-          console.log('Current SOL Balance:', solAmount);
-          setFromBalance(solAmount);
+          // SOL balance - try multiple endpoints
+
+          // Try wallet adapter connection first
+          try {
+            const solBalance = await connection.getBalance(publicKey, 'confirmed');
+            const solAmount = solBalance / Math.pow(10, 9);
+            console.log('SOL Balance (wallet connection):', solAmount);
+            setFromBalance(solAmount);
+            balanceFetched = true;
+          } catch (walletConnError) {
+            console.log('Wallet connection failed for SOL balance:', walletConnError);
+            lastError = walletConnError;
+          }
+
+          // Try fallback RPC endpoints if needed
+          if (!balanceFetched) {
+            for (const rpcUrl of RPC_ENDPOINTS) {
+              try {
+                const fallbackConnection = new Connection(rpcUrl, {
+                  commitment: 'confirmed',
+                  confirmTransactionInitialTimeout: 8000,
+                });
+                const solBalance = await fallbackConnection.getBalance(publicKey, 'confirmed');
+                const solAmount = solBalance / Math.pow(10, 9);
+                console.log(`SOL Balance (${rpcUrl}):`, solAmount);
+                setFromBalance(solAmount);
+                balanceFetched = true;
+                break;
+              } catch (rpcError) {
+                console.log(`RPC ${rpcUrl} failed for SOL:`, rpcError);
+                lastError = rpcError;
+              }
+            }
+          }
         } else {
           // SPL Token balance
+
+          // Try wallet adapter connection first
           try {
-            const tokenAccounts = await connectionWithConfig.getParsedTokenAccountsByOwner(publicKey, {
+            const tokenAccounts = await connection.getParsedTokenAccountsByOwner(publicKey, {
               mint: new PublicKey(fromToken.address)
-            }, 'finalized');
+            }, 'confirmed');
 
             if (tokenAccounts.value.length > 0) {
               const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
-              console.log(`Current ${fromToken.symbol} Balance:`, balance);
+              console.log(`${fromToken.symbol} Balance (wallet connection):`, balance);
               setFromBalance(balance);
+              balanceFetched = true;
             } else {
               console.log('No token account found for:', fromToken.symbol);
               setFromBalance(0);
+              balanceFetched = true;
             }
           } catch (tokenError) {
-            console.log('Error fetching token balance:', tokenError);
-            setFromBalance(0);
+            console.log('Wallet connection failed for token balance:', tokenError);
+            lastError = tokenError;
+          }
+
+          // Try fallback RPC endpoints if needed
+          if (!balanceFetched) {
+            for (const rpcUrl of RPC_ENDPOINTS) {
+              try {
+                const fallbackConnection = new Connection(rpcUrl, {
+                  commitment: 'confirmed',
+                  confirmTransactionInitialTimeout: 8000,
+                });
+                const tokenAccounts = await fallbackConnection.getParsedTokenAccountsByOwner(publicKey, {
+                  mint: new PublicKey(fromToken.address)
+                }, 'confirmed');
+
+                if (tokenAccounts.value.length > 0) {
+                  const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
+                  console.log(`${fromToken.symbol} Balance (${rpcUrl}):`, balance);
+                  setFromBalance(balance);
+                  balanceFetched = true;
+                  break;
+                } else {
+                  console.log(`No token account found on ${rpcUrl}`);
+                  setFromBalance(0);
+                  balanceFetched = true;
+                  break;
+                }
+              } catch (rpcError) {
+                console.log(`RPC ${rpcUrl} failed for token:`, rpcError);
+                lastError = rpcError;
+              }
+            }
           }
         }
+
+        if (!balanceFetched) {
+          throw lastError || new Error('All balance fetch attempts failed');
+        }
+
       } catch (error) {
         console.error('Error fetching balance:', error);
-        // Don't reset balance on error
+        setBalanceError(`Failed to fetch ${fromToken.symbol} balance`);
+        // Don't reset balance to 0 on error, keep last known balance
       }
     }
 
     if (publicKey && fromToken.address) {
       fetchFromBalance();
 
-      // Real-time balance updates every 3 seconds
-      const interval = setInterval(fetchFromBalance, 3000);
+      // Real-time balance updates with adaptive interval
+      const interval = setInterval(fetchFromBalance, balanceError ? 8000 : 4000);
       return () => clearInterval(interval);
     }
-  }, [publicKey, fromToken]);
+  }, [publicKey, fromToken, connection]);
 
   // Real-time quote fetching with auto-refresh
   useEffect(() => {
