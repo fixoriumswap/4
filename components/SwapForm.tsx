@@ -32,13 +32,15 @@ interface QuoteResponse {
 }
 
 export default function SwapForm() {
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction, connected } = useWallet();
   const [fromMint, setFromMint] = useState("So11111111111111111111111111111111111111112");
   const [toMint, setToMint] = useState("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
   const [amount, setAmount] = useState("");
+  const [slippage, setSlippage] = useState(0.5);
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [swapStatus, setSwapStatus] = useState("");
+  const [error, setError] = useState("");
 
   useEffect(() => {
     async function fetchQuote() {
