@@ -38,7 +38,7 @@ function SwapFormContent() {
   const jupiterQuoteApi = createJupiterApiClient();
   const connection = new Connection(RPC_URL);
 
-  // Fetch FROM token balance only
+  // Fetch FROM token balance with real-time updates
   useEffect(() => {
     async function fetchFromBalance() {
       if (!publicKey || !fromToken.address) {
@@ -48,28 +48,28 @@ function SwapFormContent() {
 
       try {
         const connectionWithConfig = new Connection(RPC_URL, {
-          commitment: 'confirmed',
-          confirmTransactionInitialTimeout: 30000,
+          commitment: 'finalized',
+          confirmTransactionInitialTimeout: 10000,
         });
 
-        console.log('Fetching balance for token:', fromToken.symbol, fromToken.address);
+        console.log('Fetching real-time balance for token:', fromToken.symbol, fromToken.address);
 
         if (fromToken.address === "So11111111111111111111111111111111111111112") {
           // SOL balance
-          const solBalance = await connectionWithConfig.getBalance(publicKey);
+          const solBalance = await connectionWithConfig.getBalance(publicKey, 'finalized');
           const solAmount = solBalance / Math.pow(10, 9);
-          console.log('SOL Balance:', solAmount);
+          console.log('Current SOL Balance:', solAmount);
           setFromBalance(solAmount);
         } else {
           // SPL Token balance
           try {
             const tokenAccounts = await connectionWithConfig.getParsedTokenAccountsByOwner(publicKey, {
               mint: new PublicKey(fromToken.address)
-            });
+            }, 'finalized');
 
             if (tokenAccounts.value.length > 0) {
               const balance = tokenAccounts.value[0].account.data.parsed.info.tokenAmount.uiAmount || 0;
-              console.log(`${fromToken.symbol} Balance:`, balance);
+              console.log(`Current ${fromToken.symbol} Balance:`, balance);
               setFromBalance(balance);
             } else {
               console.log('No token account found for:', fromToken.symbol);
@@ -82,15 +82,17 @@ function SwapFormContent() {
         }
       } catch (error) {
         console.error('Error fetching balance:', error);
-        setFromBalance(0);
+        // Don't reset balance on error
       }
     }
 
-    fetchFromBalance();
+    if (publicKey && fromToken.address) {
+      fetchFromBalance();
 
-    // Refresh balance every 30 seconds
-    const interval = setInterval(fetchFromBalance, 30000);
-    return () => clearInterval(interval);
+      // Real-time balance updates every 3 seconds
+      const interval = setInterval(fetchFromBalance, 3000);
+      return () => clearInterval(interval);
+    }
   }, [publicKey, fromToken]);
 
   // Real-time quote fetching with auto-refresh
