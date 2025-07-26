@@ -313,7 +313,10 @@ function SwapFormContent() {
       <div className="swap-section">
         <div className="swap-label-row">
           <label className="swap-label">From Token</label>
-          <span className="balance-display">Balance: {fromBalance.toFixed(6)} {fromToken.symbol}</span>
+          <span className="balance-display">
+            Balance: {fromBalance.toFixed(6)} {fromToken.symbol}
+            {balanceError && <span className="balance-error-indicator" title={balanceError}>⚠️</span>}
+          </span>
         </div>
         <TokenSearch
           onTokenSelect={setFromToken}
