@@ -66,55 +66,123 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
     try {
       setLoading(true);
 
-      // Validate address format
+      // Validate address format (Solana address is base58 and 32-44 characters)
       if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(address)) {
         setTokens(POPULAR_TOKENS);
         return;
       }
 
-      const pubkey = new PublicKey(address);
+      console.log('Searching for token:', address);
 
-      // Try to get account info to verify it exists
-      const accountInfo = await connection.getAccountInfo(pubkey);
-      if (accountInfo) {
-        // Try to get token metadata from Jupiter API
+      let tokenFound = false;
+      let customToken: Token | null = null;
+
+      try {
+        const pubkey = new PublicKey(address);
+
+        // Check if account exists on Solana
+        const accountInfo = await connection.getAccountInfo(pubkey);
+        if (!accountInfo) {
+          console.log('Token account does not exist');
+          setTokens(POPULAR_TOKENS);
+          return;
+        }
+
+        console.log('Token account exists');
+
+        // Try multiple sources for token metadata
+
+        // 1. Try Jupiter Token List API
         try {
-          const response = await fetch(`https://token.jup.ag/token/${address}`);
-          if (response.ok) {
-            const tokenData = await response.json();
-            const customToken: Token = {
+          console.log('Trying Jupiter token list...');
+          const jupiterResponse = await fetch(`https://token.jup.ag/token/${address}`);
+          if (jupiterResponse.ok) {
+            const tokenData = await jupiterResponse.json();
+            customToken = {
               address: address,
               symbol: tokenData.symbol || `${address.slice(0, 4)}...${address.slice(-4)}`,
               name: tokenData.name || `Token ${address.slice(0, 8)}`,
               decimals: tokenData.decimals || 9,
               logoURI: tokenData.logoURI
             };
-            setTokens([customToken, ...POPULAR_TOKENS]);
-          } else {
-            // Fallback if no metadata found
-            const customToken: Token = {
-              address: address,
-              symbol: `${address.slice(0, 4)}...${address.slice(-4)}`,
-              name: `Custom Token`,
-              decimals: 9,
-            };
-            setTokens([customToken, ...POPULAR_TOKENS]);
+            tokenFound = true;
+            console.log('Found token in Jupiter list:', customToken);
           }
-        } catch (metadataError) {
-          // Fallback token
-          const customToken: Token = {
+        } catch (jupiterError) {
+          console.log('Jupiter API error:', jupiterError);
+        }
+
+        // 2. Try Solana Token List (includes many pump.fun tokens)
+        if (!tokenFound) {
+          try {
+            console.log('Trying Solana token list...');
+            const solanaListResponse = await fetch('https://raw.githubusercontent.com/solana-labs/token-list/main/src/tokens/solana.tokenlist.json');
+            if (solanaListResponse.ok) {
+              const tokenList = await solanaListResponse.json();
+              const foundToken = tokenList.tokens.find((token: any) => token.address === address);
+              if (foundToken) {
+                customToken = {
+                  address: address,
+                  symbol: foundToken.symbol,
+                  name: foundToken.name,
+                  decimals: foundToken.decimals,
+                  logoURI: foundToken.logoURI
+                };
+                tokenFound = true;
+                console.log('Found token in Solana list:', customToken);
+              }
+            }
+          } catch (solanaListError) {
+            console.log('Solana token list error:', solanaListError);
+          }
+        }
+
+        // 3. Try to get token metadata from the account directly
+        if (!tokenFound) {
+          try {
+            console.log('Trying to parse token metadata from account...');
+            // Try to get token supply and decimals from the mint account
+            const tokenSupply = await connection.getTokenSupply(pubkey);
+            if (tokenSupply && tokenSupply.value) {
+              customToken = {
+                address: address,
+                symbol: `${address.slice(0, 6)}...${address.slice(-4)}`,
+                name: `Custom Token`,
+                decimals: tokenSupply.value.decimals || 9,
+              };
+              tokenFound = true;
+              console.log('Created token from mint info:', customToken);
+            }
+          } catch (mintError) {
+            console.log('Mint info error:', mintError);
+          }
+        }
+
+        // 4. Fallback: create basic token info
+        if (!tokenFound) {
+          console.log('Creating fallback token info...');
+          customToken = {
             address: address,
             symbol: `${address.slice(0, 4)}...${address.slice(-4)}`,
             name: `Token ${address.slice(0, 8)}`,
             decimals: 9,
           };
-          setTokens([customToken, ...POPULAR_TOKENS]);
         }
-      } else {
+
+        if (customToken) {
+          setTokens([customToken, ...POPULAR_TOKENS]);
+          console.log('Token search successful');
+        } else {
+          setTokens(POPULAR_TOKENS);
+        }
+
+      } catch (pubkeyError) {
+        console.log('Invalid public key:', pubkeyError);
         setTokens(POPULAR_TOKENS);
       }
+
     } catch (error) {
-      console.log('Token search error:', error);
+      console.error('Token search error:', error);
       setTokens(POPULAR_TOKENS);
     } finally {
       setLoading(false);
