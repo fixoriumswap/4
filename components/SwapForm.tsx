@@ -16,14 +16,28 @@ interface Token {
 
 export default function SwapForm() {
   const { publicKey, wallet, signTransaction } = useWallet();
-  const [fromMint, setFromMint] = useState("So11111111111111111111111111111111111111112");
-  const [toMint, setToMint] = useState("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
+  const [fromToken, setFromToken] = useState<Token>({
+    address: "So11111111111111111111111111111111111111112",
+    symbol: "SOL",
+    name: "Solana",
+    decimals: 9
+  });
+  const [toToken, setToToken] = useState<Token>({
+    address: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+    symbol: "USDC",
+    name: "USD Coin",
+    decimals: 6
+  });
   const [amount, setAmount] = useState("");
+  const [receiveAddress, setReceiveAddress] = useState("");
   const [quote, setQuote] = useState<QuoteResponse | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [swapStatus, setSwapStatus] = useState("");
+  const [fromBalance, setFromBalance] = useState<number>(0);
+  const [toBalance, setToBalance] = useState<number>(0);
 
   const jupiterQuoteApi = createJupiterApiClient();
+  const connection = new Connection(RPC_URL);
 
   useEffect(() => {
     async function fetchQuote() {
