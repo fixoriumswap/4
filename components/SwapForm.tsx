@@ -3,6 +3,8 @@ import { useWallet } from '@solana/wallet-adapter-react';
 import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
+const JUPITER_API_URL = 'https://api.jup.ag/swap/v6';
+
 const TOKEN_DECIMALS = {
   "So11111111111111111111111111111111111111112": 9, // SOL
   "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": 6, // USDC
@@ -15,6 +17,19 @@ const TOKEN_SYMBOLS = {
   "DezXAZ8z7PnrnRJjz3wXBoRhwTLdMPkqhuBczetogeoK": "BONK",
   "EKpQGSJtjMFqKZ9KQanSqYXRcF8fBtUk6goG7zcX3New": "WIF",
 };
+
+interface QuoteResponse {
+  inputMint: string;
+  inAmount: string;
+  outputMint: string;
+  outAmount: string;
+  otherAmountThreshold: string;
+  swapMode: string;
+  slippageBps: number;
+  platformFee?: any;
+  priceImpactPct: string;
+  routePlan: any[];
+}
 
 export default function SwapForm() {
   const { publicKey, wallet, signTransaction } = useWallet();
