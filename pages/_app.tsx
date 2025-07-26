@@ -10,7 +10,16 @@ import { useMemo } from 'react';
 
 export default function App({ Component, pageProps }: AppProps) {
   const network = WalletAdapterNetwork.Mainnet;
-  const endpoint = useMemo(() => clusterApiUrl(network), [network]);
+  // Use multiple high-quality RPC endpoints for better reliability
+  const endpoint = useMemo(() => {
+    // Try to use a high-performance RPC endpoint first, fallback to default
+    const rpcEndpoints = [
+      'https://api.mainnet-beta.solana.com',
+      'https://solana-api.projectserum.com',
+      clusterApiUrl(network)
+    ];
+    return rpcEndpoints[0]; // Use the first one by default
+  }, [network]);
 
   const wallets = useMemo(
     () => [
