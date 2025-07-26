@@ -1,7 +1,7 @@
- import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey } from '@solana/web3.js';
-import { Jupiter, RouteInfo } from '@jup-ag/core';
+import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import { createJupiterApiClient, QuoteResponse } from '@jup-ag/api';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
 const TOKEN_DECIMALS = {
