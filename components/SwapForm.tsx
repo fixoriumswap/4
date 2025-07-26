@@ -129,12 +129,17 @@ export default function SwapForm() {
   async function handleSwap(e: React.FormEvent) {
     e.preventDefault();
     setSwapStatus("Preparing swap...");
+
     try {
       if (!quote || !publicKey || !wallet || !signTransaction) {
         return setSwapStatus("No route or wallet.");
       }
 
-      const connection = new Connection(RPC_URL);
+      if (!receiveAddress) {
+        return setSwapStatus("Please enter a receive address.");
+      }
+
+      setSwapStatus("Building transaction...");
 
       // Get swap transaction
       const swapResult = await jupiterQuoteApi.swapPost({
@@ -142,8 +147,11 @@ export default function SwapForm() {
           quoteResponse: quote,
           userPublicKey: publicKey.toString(),
           wrapAndUnwrapSol: true,
+          destinationTokenAccount: receiveAddress !== publicKey.toString() ? receiveAddress : undefined,
         }
       });
+
+      setSwapStatus("Please sign the transaction...");
 
       // Deserialize the transaction
       const swapTransactionBuf = Buffer.from(swapResult.swapTransaction, 'base64');
@@ -152,17 +160,29 @@ export default function SwapForm() {
       // Sign the transaction
       const signedTransaction = await signTransaction(transaction);
 
-      // Execute the transaction
-      const txid = await connection.sendTransaction(signedTransaction);
+      setSwapStatus("Sending transaction...");
 
-      setSwapStatus("Swap submitted! Tx: " + txid);
+      // Execute the transaction
+      const txid = await connection.sendTransaction(signedTransaction, {
+        maxRetries: 3,
+        skipPreflight: false,
+      });
+
+      setSwapStatus(`Swap submitted! Confirming... Tx: ${txid}`);
 
       // Confirm transaction
-      await connection.confirmTransaction(txid);
-      setSwapStatus("Swap confirmed! Tx: " + txid);
+      const confirmation = await connection.confirmTransaction(txid, 'confirmed');
+
+      if (confirmation.value.err) {
+        setSwapStatus("Transaction failed: " + confirmation.value.err);
+      } else {
+        setSwapStatus("✅ Swap successful! Tx: " + txid);
+        // Reset form
+        setAmount("");
+      }
 
     } catch (e: any) {
-      setSwapStatus("Swap failed: " + (e?.message || e));
+      setSwapStatus("❌ Swap failed: " + (e?.message || e));
     }
   }
 
