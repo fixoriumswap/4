@@ -69,5 +69,14 @@ declare global {
       on?: (event: string, callback: () => void) => void;
       publicKey?: any;
     };
+    phantom?: {
+      solana?: {
+        isPhantom?: boolean;
+        connect?: () => Promise<any>;
+        disconnect?: () => Promise<void>;
+        on?: (event: string, callback: () => void) => void;
+        publicKey?: any;
+      };
+    };
   }
 }
