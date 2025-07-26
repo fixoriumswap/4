@@ -1,8 +1,9 @@
 import React from 'react';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import WalletWrapper from './WalletWrapper';
 
-export default function Navbar() {
+function WalletSection() {
   const { publicKey, disconnect } = useWallet();
   const address = publicKey?.toBase58();
 
@@ -18,6 +19,28 @@ export default function Navbar() {
   }
 
   return (
+    <div className="navbar-right">
+      {!publicKey ? (
+        <WalletMultiButton />
+      ) : (
+        <div className="wallet-connected">
+          <span className="wallet-address" title={address}>
+            {shortAddr(address!)}
+          </span>
+          <button className="copy-btn" onClick={copyAddress}>
+            Copy
+          </button>
+          <button className="disconnect-btn" onClick={() => disconnect()}>
+            Disconnect
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+export default function Navbar() {
+  return (
     <nav className="navbar">
       <div className="navbar-content">
         <div className="navbar-left">
@@ -29,24 +52,10 @@ export default function Navbar() {
             <span className="navbar-title">FIXORIUM</span>
           </div>
         </div>
-        
-        <div className="navbar-right">
-          {!publicKey ? (
-            <WalletMultiButton />
-          ) : (
-            <div className="wallet-connected">
-              <span className="wallet-address" title={address}>
-                {shortAddr(address!)}
-              </span>
-              <button className="copy-btn" onClick={copyAddress}>
-                Copy
-              </button>
-              <button className="disconnect-btn" onClick={() => disconnect()}>
-                Disconnect
-              </button>
-            </div>
-          )}
-        </div>
+
+        <WalletWrapper>
+          <WalletSection />
+        </WalletWrapper>
       </div>
     </nav>
   );
