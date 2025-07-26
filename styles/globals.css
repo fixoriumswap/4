@@ -139,3 +139,69 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; }
 .wallet-adapter-button:hover:not(.wallet-adapter-button-loading) {
   background: #22bca7;
 }
+
+/* Navbar Styles */
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: #23272f;
+  border-bottom: 1px solid #333;
+  z-index: 1000;
+  height: 70px;
+}
+
+.navbar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 16px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.navbar-left {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-logo {
+  height: 40px;
+  width: 40px;
+  margin-right: 12px;
+}
+
+.navbar-title {
+  font-size: 26px;
+  font-weight: bold;
+  color: #fff;
+}
+
+.wallet-connected {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.disconnect-btn {
+  background: #f73e3e;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-weight: bold;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.disconnect-btn:hover {
+  background: #e53535;
+}
