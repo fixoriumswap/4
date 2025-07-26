@@ -210,6 +210,17 @@ export default function SwapForm() {
     }
   }
 
+  if (!connected) {
+    return (
+      <div className="swap-form card">
+        <div className="connect-message">
+          <h3>Connect Your Phantom Wallet</h3>
+          <p>Please connect your Phantom wallet to start swapping tokens</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <form className="swap-form card" onSubmit={handleSwap} autoComplete="off">
       <label className="swap-label">From Token</label>
@@ -219,6 +230,7 @@ export default function SwapForm() {
         <option value="DezXAZ8z7PnrnRJjz3wXBoRhwTLdMPkqhuBczetogeoK">BONK</option>
         <option value="EKpQGSJtjMFqKZ9KQanSqYXRcF8fBtUk6goG7zcX3New">WIF</option>
       </select>
+
       <label className="swap-label">To Token</label>
       <select className="swap-input" value={toMint} onChange={e => setToMint(e.target.value)}>
         <option value="EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v">USDC</option>
@@ -226,19 +238,72 @@ export default function SwapForm() {
         <option value="DezXAZ8z7PnrnRJjz3wXBoRhwTLdMPkqhuBczetogeoK">BONK</option>
         <option value="EKpQGSJtjMFqKZ9KQanSqYXRcF8fBtUk6goG7zcX3New">WIF</option>
       </select>
+
       <label className="swap-label">Amount</label>
-      <input className="swap-input" type="number" min="0" step="any" value={amount} onChange={e => setAmount(e.target.value)} placeholder="Enter amount" />
+      <input
+        className="swap-input"
+        type="number"
+        min="0"
+        step="any"
+        value={amount}
+        onChange={e => setAmount(e.target.value)}
+        placeholder="Enter amount"
+      />
+
+      <label className="swap-label">Slippage Tolerance</label>
+      <div className="slippage-controls">
+        {[0.1, 0.5, 1.0].map(value => (
+          <button
+            key={value}
+            type="button"
+            className={`slippage-btn ${slippage === value ? 'active' : ''}`}
+            onClick={() => setSlippage(value)}
+          >
+            {value}%
+          </button>
+        ))}
+        <input
+          type="number"
+          className="slippage-input"
+          min="0.1"
+          max="50"
+          step="0.1"
+          value={slippage}
+          onChange={e => setSlippage(Number(e.target.value))}
+          placeholder="Custom"
+        />
+      </div>
+
+      {error && (
+        <div className="error-message">
+          {error}
+        </div>
+      )}
+
       <div id="swapRatio">
         {quoteLoading ? <span className="spinner"/> : (
           quote ? (
             <div>
-              Rate: <b>{amount} {TOKEN_SYMBOLS[fromMint]}</b> ≈ <b>{(Number(quote.outAmount)/Math.pow(10,TOKEN_DECIMALS[toMint])).toFixed(6)} {TOKEN_SYMBOLS[toMint]}</b>
+              <div>Rate: <b>{amount} {TOKEN_SYMBOLS[fromMint]}</b> ≈ <b>{(Number(quote.outAmount)/Math.pow(10,TOKEN_DECIMALS[toMint])).toFixed(6)} {TOKEN_SYMBOLS[toMint]}</b></div>
+              <div className="quote-details">
+                Price Impact: <span className={Number(quote.priceImpactPct) > 1 ? 'high-impact' : 'low-impact'}>
+                  {(Number(quote.priceImpactPct) * 100).toFixed(2)}%
+                </span>
+              </div>
             </div>
           ) : amount && fromMint !== toMint ? <span style={{color:"#f73e3e"}}>No route found.</span> : null
         )}
       </div>
-      <button className="swap-btn" type="submit" disabled={!quote || !publicKey}>Swap</button>
-      <div id="swapStatus" style={{marginTop:"10px"}}>{swapStatus}</div>
+
+      <button className="swap-btn" type="submit" disabled={!quote || !connected || quoteLoading}>
+        {quoteLoading ? 'Finding Route...' : 'Swap Tokens'}
+      </button>
+
+      {swapStatus && (
+        <div id="swapStatus" className={swapStatus.includes('successful') ? 'success-message' : 'status-message'}>
+          {swapStatus}
+        </div>
+      )}
     </form>
   );
-    }
+}
