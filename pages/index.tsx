@@ -9,12 +9,13 @@ export default function Home() {
   const { publicKey } = useWallet();
 
   return (
-    <div style={{ minHeight: '100vh', background: '#181a20', color: '#fff' }} suppressHydrationWarning>
+    <div style={{ minHeight: '100vh', background: '#181a20', color: '#fff', paddingBottom: '100px' }} suppressHydrationWarning>
       <Navbar />
       <main>
         {publicKey && <BalanceContainer />}
         <SwapForm />
       </main>
+      <BottomBar />
     </div>
   );
 }
