@@ -37,17 +37,26 @@ function WalletSection() {
           await connect();
         }
       } else {
-        // Redirect to Phantom mobile wallet
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        if (isMobile) {
-          // For mobile, try to open Phantom app
+        // Handle case when Phantom is not detected
+        if (isMobileDevice()) {
+          // For mobile, try to open Phantom app with deep link
           const currentUrl = window.location.href;
           const phantomUrl = `https://phantom.app/ul/browse/${encodeURIComponent(currentUrl)}?ref=${encodeURIComponent(window.location.origin)}`;
-          window.open(phantomUrl, '_blank');
+
+          // Try to open Phantom app, fallback to app store
+          const phantomApp = window.open(phantomUrl, '_blank');
+
+          // If popup was blocked or app not installed, show install option
+          setTimeout(() => {
+            if (!phantomApp || phantomApp.closed) {
+              if (confirm('Phantom app not found. Would you like to install it?')) {
+                openPhantomDownload();
+              }
+            }
+          }, 3000);
         } else {
-          // For desktop, prompt to install Phantom
-          if (confirm('Phantom wallet not detected. Would you like to install it?')) {
+          // For desktop, prompt to install Phantom extension
+          if (confirm('Phantom wallet extension not detected. Would you like to install it?')) {
             openPhantomDownload();
           }
         }
