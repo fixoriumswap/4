@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
 import { createJupiterApiClient, QuoteResponse } from '@jup-ag/api';
 import TokenSearch from './TokenSearch';
@@ -16,7 +16,7 @@ interface Token {
 }
 
 function SwapFormContent() {
-  const { publicKey, wallet, signTransaction } = useWallet();
+  const { publicKey, keypair } = useWalletContext();
   const [fromToken, setFromToken] = useState<Token>({
     address: "So11111111111111111111111111111111111111112",
     symbol: "SOL",
