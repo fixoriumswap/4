@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
 import { useWalletContext } from './WalletContext';
 import { Connection, PublicKey } from '@solana/web3.js';
 
@@ -24,12 +23,8 @@ interface WalletStats {
 }
 
 export default function WalletDashboard() {
-  // Support both Gmail and extension wallets
-  const { publicKey: extensionKey, connected: extensionConnected } = useWallet();
-  const { publicKey: gmailKey, isConnected: gmailConnected, connectionType } = useWalletContext();
-  
-  const publicKey = gmailKey || extensionKey;
-  const connected = gmailConnected || extensionConnected;
+  // Gmail wallet only
+  const { publicKey, isConnected: connected, connectionType } = useWalletContext();
   
   const [stats, setStats] = useState<WalletStats>({
     totalValue: 0,
