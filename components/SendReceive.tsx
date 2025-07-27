@@ -231,22 +231,23 @@ export default function SendReceive() {
         transaction.recentBlockhash = (await connection.getLatestBlockhash()).blockhash;
         transaction.feePayer = publicKey;
 
-        setStatus('Please sign the transaction...');
-        const signedTransaction = await signTransaction(transaction);
+        setStatus('Signing transaction...');
+        transaction.sign([keypair]);
+        const signedTransaction = transaction;
 
         setStatus('Sending transaction...');
         const signature = await connection.sendRawTransaction(signedTransaction.serialize());
-        
+
         setStatus('Confirming transaction...');
         await connection.confirmTransaction(signature, 'confirmed');
-        
+
         setStatus(`✅ Transaction successful! Signature: ${signature}`);
-        
+
         // Reset form
         setAmount('');
         setRecipient('');
         setMemo('');
-        
+
         // Refresh balances
         fetchTokens();
       }
