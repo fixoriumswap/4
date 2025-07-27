@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
 import { useLocation, CountryInfo } from '../../hooks/useLocation'
+import { sortCountries, filterCountries } from '../../utils/countryUtils'
 
 interface AuthState {
   step: 'phone' | 'code'
@@ -383,7 +384,7 @@ export default function SignIn() {
                     {/* Country Selector */}
                     <div className="country-selector" onClick={() => setState(prev => ({ ...prev, showCountryPicker: !prev.showCountryPicker }))}>
                       <span className="country-flag">
-                        {state.selectedCountry?.flag || '🇺🇸'}
+                        {state.selectedCountry?.flag || '🇺����'}
                       </span>
                       <span className="country-code">
                         {state.selectedCountry?.dialCode || '+1'}
