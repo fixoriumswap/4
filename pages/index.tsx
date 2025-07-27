@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import { useWalletContext } from '../components/WalletContext';
 import ModernNavbar from '../components/ModernNavbar';
 import WalletDashboard from '../components/WalletDashboard';
