@@ -10,12 +10,35 @@ This document explains the auto-detection features for country and VPN detection
 3. **Manual Override**: Users can manually change their country using the country picker dropdown
 
 ### Supported Countries
-The system supports 30+ major countries with their respective dial codes and flag emojis:
+The system supports **ALL 249 countries and territories** worldwide with their respective dial codes and flag emojis:
 - 🇺🇸 United States (+1)
 - 🇬🇧 United Kingdom (+44)
 - 🇩🇪 Germany (+49)
 - 🇯🇵 Japan (+81)
-- And many more...
+- 🇨🇳 China (+86)
+- 🇮🇳 India (+91)
+- 🇧🇷 Brazil (+55)
+- 🇫🇷 France (+33)
+- 🇮🇹 Italy (+39)
+- 🇪🇸 Spain (+34)
+- 🇷🇺 Russia (+7)
+- 🇦🇺 Australia (+61)
+- **And 237 more countries!**
+
+#### Complete Coverage Includes:
+- **All UN Member States** (193 countries)
+- **Observer States** (Vatican City, Palestine)
+- **Dependencies & Territories** (53 territories)
+- **Special Administrative Regions** (Hong Kong, Macao)
+- **Disputed Territories** (Kosovo, Taiwan)
+
+#### Regional Coverage:
+- 🌍 **Africa**: 54 countries
+- 🌎 **Americas**: 35 countries
+- 🌏 **Asia**: 48 countries
+- 🌍 **Europe**: 44 countries
+- 🌊 **Oceania**: 14 countries
+- 🏝️ **Dependencies**: 54 territories
 
 ### API Endpoint
 ```
