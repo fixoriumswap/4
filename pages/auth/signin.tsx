@@ -399,15 +399,30 @@ export default function SignIn() {
                   </div>
                 )}
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   className="submit-button"
-                  disabled={state.loading || state.phoneNumber.length < 10}
+                  disabled={
+                    state.loading ||
+                    state.phoneNumber.length < 7 ||
+                    (location && location.isVPN) ||
+                    isLocationLoading
+                  }
                 >
-                  {state.loading ? (
+                  {isLocationLoading ? (
+                    <>
+                      <div className="spinner"></div>
+                      <span>Detecting Location...</span>
+                    </>
+                  ) : state.loading ? (
                     <>
                       <div className="spinner"></div>
                       <span>Sending Code...</span>
+                    </>
+                  ) : location && location.isVPN ? (
+                    <>
+                      <span className="button-icon">🚫</span>
+                      <span>Please Disable VPN</span>
                     </>
                   ) : (
                     <>
@@ -474,7 +489,7 @@ export default function SignIn() {
 
                 {state.error && (
                   <div className="error-message">
-                    <span className="error-icon">⚠️</span>
+                    <span className="error-icon">⚠��</span>
                     {state.error}
                   </div>
                 )}
