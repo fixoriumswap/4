@@ -230,14 +230,23 @@ export default function SignIn() {
   const handleResendCode = async () => {
     if (!state.canResend) return
 
+    if (!state.selectedCountry) {
+      setState(prev => ({ ...prev, error: 'Country information missing' }))
+      return
+    }
+
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
+      // Format full phone number with country code
+      const fullPhoneNumber = `${state.selectedCountry.dialCode}${state.phoneNumber}`
+
       const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          phoneNumber: state.phoneNumber,
+        body: JSON.stringify({
+          phoneNumber: fullPhoneNumber,
+          countryCode: state.selectedCountry.code,
           type: type as string
         })
       })
