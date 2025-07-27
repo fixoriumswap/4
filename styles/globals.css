@@ -2210,122 +2210,31 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   font-size: 16px;
 }
 
-/* Dashboard */
-.dashboard-container {
-  max-width: 800px;
+/* App Interface */
+.app-interface {
+  max-width: 500px;
   margin: 0 auto;
   padding: 20px;
 }
 
-.dashboard-header {
+/* Swap Interface */
+.swap-interface {
+  width: 100%;
+}
+
+.swap-form-container {
+  background: #23272f;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px #0003;
+  padding: 32px 24px;
+  border: 1px solid #333;
+}
+
+.swap-title {
   text-align: center;
-  margin-bottom: 40px;
-}
-
-.dashboard-header h1 {
-  margin: 0 0 8px 0;
+  margin: 0 0 24px 0;
   color: #29d6b6;
-}
-
-.dashboard-header p {
-  margin: 0;
-  color: #999;
-}
-
-.wallet-overview {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 24px;
-  margin-bottom: 40px;
-}
-
-.balance-card {
-  background: #23272f;
-  border-radius: 16px;
-  padding: 24px;
-  text-align: center;
-  border: 1px solid #333;
-}
-
-.balance-card h2 {
-  margin: 0 0 16px 0;
-  color: #999;
-  font-size: 16px;
-}
-
-.balance-amount {
-  display: flex;
-  align-items: baseline;
-  justify-content: center;
-  gap: 8px;
-  margin-bottom: 8px;
-}
-
-.balance-value {
-  font-size: 36px;
-  font-weight: bold;
-  color: #29d6b6;
-}
-
-.balance-currency {
-  font-size: 18px;
-  color: #999;
-}
-
-.balance-usd {
-  color: #666;
-  font-size: 14px;
-}
-
-.quick-actions {
-  background: #23272f;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #333;
-}
-
-.quick-actions h3 {
-  margin: 0 0 12px 0;
-  color: #29d6b6;
-}
-
-.action-hints {
-  margin-top: 16px;
-}
-
-.hint {
-  padding: 8px 0;
-  font-size: 14px;
-  color: #999;
-}
-
-.platform-info {
-  background: #23272f;
-  border-radius: 16px;
-  padding: 24px;
-  border: 1px solid #333;
-}
-
-.platform-info h3 {
-  margin: 0 0 16px 0;
-  color: #29d6b6;
-}
-
-.info-grid {
-  display: grid;
-  gap: 12px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 0;
-  border-bottom: 1px solid #333;
-}
-
-.info-item:last-child {
-  border-bottom: none;
+  font-size: 24px;
 }
 
 /* Fixorium Bottom Bar */
