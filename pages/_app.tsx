@@ -8,10 +8,7 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   TorusWalletAdapter,
-  LedgerWalletAdapter,
-  MathWalletAdapter,
-  Coin98WalletAdapter,
-  SlopeWalletAdapter
+  LedgerWalletAdapter
 } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
@@ -28,19 +25,14 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
     return process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl(network);
   }, [network]);
 
-  // Comprehensive wallet list for maximum compatibility
+  // Wallet list with only verified working adapters
   const wallets = useMemo(
     () => [
-      // Most popular wallets first
+      // Core wallets that are stable and working
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter({ network }),
-      
-      // Additional wallet support
       new TorusWalletAdapter(),
       new LedgerWalletAdapter(),
-      new MathWalletAdapter(),
-      new Coin98WalletAdapter(),
-      new SlopeWalletAdapter(),
     ],
     [network]
   );
