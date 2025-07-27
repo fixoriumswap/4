@@ -75,7 +75,12 @@ export default function CryptoLoader({ onComplete, duration = 5000 }: CryptoLoad
             <span></span>
             <span></span>
           </div>
-          <p>Connecting to Solana Network</p>
+          <p>
+            {onComplete && timeLeft > 0
+              ? `Connecting to Solana Network... ${timeLeft}s`
+              : 'Connecting to Solana Network'
+            }
+          </p>
         </div>
       </div>
     </div>
