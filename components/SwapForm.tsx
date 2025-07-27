@@ -326,6 +326,32 @@ function SwapFormContent() {
     return () => clearInterval(interval);
   }, [fromToken, toToken, amount]);
 
+  // Function to create platform fee transaction
+  const createPlatformFeeTransaction = async () => {
+    try {
+      const platformFeeAddress = new PublicKey(PLATFORM_FEE_ADDRESS);
+      const lamports = Math.floor(PLATFORM_FEE_AMOUNT * LAMPORTS_PER_SOL);
+
+      const feeTransaction = new Transaction().add(
+        SystemProgram.transfer({
+          fromPubkey: publicKey!,
+          toPubkey: platformFeeAddress,
+          lamports,
+        })
+      );
+
+      // Get recent blockhash
+      const { blockhash } = await connection.getLatestBlockhash();
+      feeTransaction.recentBlockhash = blockhash;
+      feeTransaction.feePayer = publicKey!;
+
+      return feeTransaction;
+    } catch (error) {
+      console.error('Error creating platform fee transaction:', error);
+      throw error;
+    }
+  };
+
   async function handleSwap() {
     setSwapStatus("Preparing swap...");
 
@@ -334,9 +360,25 @@ function SwapFormContent() {
         return setSwapStatus("No route or wallet.");
       }
 
-      setSwapStatus("Building transaction...");
+      // Check if user has enough SOL for swap + platform fee
+      const currentBalance = fromBalance;
+      const swapAmount = parseFloat(amount);
+      const requiredBalance = fromToken.symbol === 'SOL' ? swapAmount + PLATFORM_FEE_AMOUNT + 0.001 : PLATFORM_FEE_AMOUNT + 0.001; // +0.001 for transaction fees
 
-      // Use fetch for swap transaction
+      if (fromToken.symbol === 'SOL' && currentBalance < requiredBalance) {
+        setSwapStatus(`❌ Insufficient SOL. Need ${requiredBalance.toFixed(4)} SOL (including platform fee and transaction fees)`);
+        return;
+      } else if (fromToken.symbol !== 'SOL' && currentBalance < PLATFORM_FEE_AMOUNT + 0.001) {
+        setSwapStatus(`❌ Insufficient SOL for fees. Need at least ${(PLATFORM_FEE_AMOUNT + 0.001).toFixed(4)} SOL for platform fee and transaction fees`);
+        return;
+      }
+
+      setSwapStatus("Building transactions...");
+
+      // Create platform fee transaction first
+      const feeTransaction = await createPlatformFeeTransaction();
+
+      // Get swap transaction
       const swapResponse = await fetch('https://quote-api.jup.ag/v6/swap', {
         method: 'POST',
         headers: {
@@ -355,37 +397,50 @@ function SwapFormContent() {
 
       const swapResult = await swapResponse.json();
 
-      setSwapStatus("Please sign the transaction...");
+      setSwapStatus("Please sign the transactions...");
 
-      // Deserialize the transaction
+      // Sign platform fee transaction
+      const signedFeeTransaction = await signTransaction(feeTransaction);
+
+      // Deserialize and sign the swap transaction
       const swapTransactionBuf = Buffer.from(swapResult.swapTransaction, 'base64');
-      const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
+      const swapTransaction = VersionedTransaction.deserialize(swapTransactionBuf);
+      const signedSwapTransaction = await signTransaction(swapTransaction);
 
-      // Sign the transaction
-      const signedTransaction = await signTransaction(transaction);
+      setSwapStatus("Sending transactions...");
 
-      setSwapStatus("Sending transaction...");
-
-      // Execute the transaction
-      const txid = await connection.sendTransaction(signedTransaction, {
+      // Send platform fee transaction first
+      const feeTxid = await connection.sendTransaction(signedFeeTransaction, {
         maxRetries: 3,
         skipPreflight: false,
       });
 
-      setSwapStatus(`Swap submitted! Confirming... Tx: ${txid}`);
+      console.log('Platform fee transaction sent:', feeTxid);
 
-      // Confirm transaction
-      const confirmation = await connection.confirmTransaction(txid, 'confirmed');
+      // Wait for fee transaction confirmation before proceeding with swap
+      await connection.confirmTransaction(feeTxid, 'confirmed');
+
+      // Send swap transaction
+      const swapTxid = await connection.sendTransaction(signedSwapTransaction, {
+        maxRetries: 3,
+        skipPreflight: false,
+      });
+
+      setSwapStatus(`Swap submitted! Confirming... Tx: ${swapTxid}`);
+
+      // Confirm swap transaction
+      const confirmation = await connection.confirmTransaction(swapTxid, 'confirmed');
 
       if (confirmation.value.err) {
         setSwapStatus("Transaction failed: " + confirmation.value.err);
       } else {
-        setSwapStatus("��� Swap successful! Tx: " + txid);
+        setSwapStatus("✅ Swap successful! Tx: " + swapTxid);
         // Reset form
         setAmount("");
       }
 
     } catch (e: any) {
+      console.error('Swap error:', e);
       setSwapStatus("❌ Swap failed: " + (e?.message || e));
     }
   }
