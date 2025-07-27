@@ -180,20 +180,29 @@ export default function SignIn() {
 
   const handleCodeSubmit = async (codeToSubmit?: string) => {
     const finalCode = codeToSubmit || state.code
-    
+
     if (finalCode.length !== 6) {
       setState(prev => ({ ...prev, error: 'Please enter the complete 6-digit code' }))
+      return
+    }
+
+    if (!state.selectedCountry) {
+      setState(prev => ({ ...prev, error: 'Country information missing' }))
       return
     }
 
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
+      // Format full phone number with country code
+      const fullPhoneNumber = `${state.selectedCountry.dialCode}${state.phoneNumber}`
+
       const response = await fetch('/api/auth/verify-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phoneNumber: state.phoneNumber,
+          phoneNumber: fullPhoneNumber,
+          countryCode: state.selectedCountry.code,
           code: finalCode,
           type: type as string
         })
