@@ -10,6 +10,8 @@ interface AuthState {
   error: string | null
   countdown: number
   canResend: boolean
+  selectedCountry: CountryInfo | null
+  showCountryPicker: boolean
 }
 
 export default function SignIn() {
