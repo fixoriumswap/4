@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 import { Connection } from '@solana/web3.js';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
 
 function BalanceContent() {
-  const { publicKey, connected, wallet } = useWallet();
+  const { publicKey, isConnected: connected, connectionType } = useWalletContext();
   const [totalBalance, setTotalBalance] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
