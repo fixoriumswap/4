@@ -399,10 +399,13 @@ export default function SignIn() {
                             type="text"
                             placeholder="Search countries..."
                             className="country-search-input"
+                            value={countrySearch}
+                            onChange={(e) => setCountrySearch(e.target.value)}
+                            autoFocus
                           />
                         </div>
                         <div className="country-list">
-                          {location.availableCountries.map((country) => (
+                          {filteredCountries.map((country) => (
                             <div
                               key={country.code}
                               className="country-option"
