@@ -212,6 +212,31 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   gap: 8px;
 }
 
+.wallet-connection-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.multi-wallet-button {
+  position: relative;
+}
+
+.multi-wallet-button .wallet-adapter-button {
+  background: #444c56;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.multi-wallet-button .wallet-adapter-button:hover {
+  background: #555f70;
+}
+
 .wallet-adapter-fallback {
   opacity: 0;
   pointer-events: none;
