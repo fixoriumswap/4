@@ -11,6 +11,27 @@ interface Token {
   logoURI?: string;
 }
 
+// RPC endpoints for fallback
+const RPC_ENDPOINTS = [
+  'https://solana-mainnet.g.alchemy.com/v2/alch-demo',
+  'https://rpc.ankr.com/solana',
+  'https://api.mainnet-beta.solana.com',
+  'https://solana-api.projectserum.com'
+];
+
+const getWorkingConnection = async (): Promise<Connection> => {
+  for (const endpoint of RPC_ENDPOINTS) {
+    try {
+      const testConnection = new Connection(endpoint);
+      await testConnection.getSlot();
+      return testConnection;
+    } catch (error) {
+      console.log(`RPC ${endpoint} failed, trying next...`);
+    }
+  }
+  return new Connection(RPC_ENDPOINTS[0]); // Fallback to first endpoint
+};
+
 // Import the connection function from context
 import { useFixoriumWallet, PLATFORM_FEE_AMOUNT, PLATFORM_FEE_ADDRESS } from '../context/FixoriumWallet';
 
