@@ -2908,3 +2908,216 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
     flex-direction: column;
   }
 }
+
+/* Wallet Setup Styles */
+.wallet-setup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #181a20 0%, #1e2128 100%);
+}
+
+.setup-content {
+  max-width: 600px;
+  width: 100%;
+  text-align: center;
+}
+
+.setup-header {
+  margin-bottom: 40px;
+}
+
+.fixorium-brand {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+  margin-bottom: 10px;
+}
+
+.brand-logo {
+  width: 50px;
+  height: 50px;
+}
+
+.fixorium-brand h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #29D6B6;
+  margin: 0;
+}
+
+.setup-subtitle {
+  font-size: 1.2rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.setup-options {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.option-card {
+  background: #23272f;
+  border: 2px solid #374151;
+  border-radius: 16px;
+  padding: 30px;
+  transition: all 0.3s ease;
+}
+
+.option-card:hover {
+  border-color: #29D6B6;
+  box-shadow: 0 0 20px rgba(41, 214, 182, 0.1);
+}
+
+.option-icon {
+  width: 60px;
+  height: 60px;
+  margin: 0 auto 20px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.create-icon {
+  background: linear-gradient(135deg, #29D6B6, #16a085);
+  color: #fff;
+}
+
+.recover-icon {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+}
+
+.option-icon svg {
+  width: 30px;
+  height: 30px;
+}
+
+.option-card h2 {
+  font-size: 1.5rem;
+  color: #fff;
+  margin: 0 0 10px 0;
+}
+
+.option-card p {
+  color: #9ca3af;
+  margin: 0 0 25px 0;
+  line-height: 1.5;
+}
+
+.setup-button {
+  width: 100%;
+  padding: 15px 30px;
+  border: none;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.create-button {
+  background: linear-gradient(135deg, #29D6B6, #16a085);
+  color: #fff;
+}
+
+.create-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a085, #0d7d61);
+  transform: translateY(-2px);
+}
+
+.recover-button {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  color: #fff;
+}
+
+.recover-button:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1d4ed8, #1e40af);
+  transform: translateY(-2px);
+}
+
+.setup-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.option-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin: 10px 0;
+}
+
+.option-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: #374151;
+}
+
+.option-divider span {
+  background: #181a20;
+  padding: 0 20px;
+  color: #9ca3af;
+  font-weight: 600;
+}
+
+.setup-footer {
+  margin-top: 40px;
+}
+
+.security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 20px;
+  background: rgba(41, 214, 182, 0.1);
+  border: 1px solid rgba(41, 214, 182, 0.2);
+  border-radius: 12px;
+}
+
+.security-note svg {
+  width: 24px;
+  height: 24px;
+  color: #29D6B6;
+  flex-shrink: 0;
+}
+
+.security-note p {
+  color: #e5e7eb;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .setup-content {
+    padding: 0 10px;
+  }
+
+  .fixorium-brand h1 {
+    font-size: 2rem;
+  }
+
+  .option-card {
+    padding: 25px 20px;
+  }
+
+  .setup-button {
+    padding: 12px 24px;
+    font-size: 1rem;
+  }
+}
