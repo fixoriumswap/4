@@ -1,8 +1,8 @@
 import React from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 
 export default function WalletBar({ onDisconnect }: { onDisconnect: () => void }) {
-  const { publicKey, wallet, disconnect } = useWallet();
+  const { publicKey, signOutWallet } = useWalletContext();
   const address = publicKey?.toBase58();
 
   function shortAddr(addr: string) {
