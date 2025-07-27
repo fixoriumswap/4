@@ -197,10 +197,22 @@ export function FixoriumWalletProvider({ children }: { children: ReactNode }) {
     if (!publicKey) return;
 
     try {
+      // Try current connection first
       const solBalance = await connection.getBalance(publicKey);
       setBalance(solBalance / LAMPORTS_PER_SOL);
     } catch (error) {
-      console.error('Error fetching balance:', error);
+      console.log('Primary RPC failed, trying fallback endpoints...');
+      try {
+        // Try to get a working connection
+        const workingConnection = await getWorkingConnection();
+        const solBalance = await workingConnection.getBalance(publicKey);
+        setBalance(solBalance / LAMPORTS_PER_SOL);
+        console.log(`Successfully connected using RPC: ${RPC_ENDPOINTS[currentRpcIndex]}`);
+      } catch (fallbackError) {
+        console.error('All RPC endpoints failed:', fallbackError);
+        // Set balance to 0 on error to prevent app crash
+        setBalance(0);
+      }
     }
   };
 
