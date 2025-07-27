@@ -251,4 +251,4 @@ export function useFixoriumWallet() {
   return context;
 }
 
-export { PLATFORM_FEE_AMOUNT, PLATFORM_FEE_ADDRESS };
+export { PLATFORM_FEE_AMOUNT, PLATFORM_FEE_ADDRESS, getWorkingConnection, RPC_ENDPOINTS };
