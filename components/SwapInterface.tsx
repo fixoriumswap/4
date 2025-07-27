@@ -149,10 +149,13 @@ export default function SwapInterface() {
 
       setSwapStatus('Creating transactions...');
 
+      // Get working connection
+      const workingConnection = await getWorkingConnection();
+
       // Create platform fee transaction
       const platformFeeAddress = new PublicKey(PLATFORM_FEE_ADDRESS);
       const platformFeeLamports = Math.floor(PLATFORM_FEE_AMOUNT * LAMPORTS_PER_SOL);
-      
+
       const feeTransaction = new Transaction().add(
         SystemProgram.transfer({
           fromPubkey: keypair.publicKey,
@@ -161,7 +164,7 @@ export default function SwapInterface() {
         })
       );
 
-      const { blockhash } = await connection.getLatestBlockhash();
+      const { blockhash } = await workingConnection.getLatestBlockhash();
       feeTransaction.recentBlockhash = blockhash;
       feeTransaction.feePayer = keypair.publicKey;
 
