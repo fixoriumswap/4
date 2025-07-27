@@ -76,16 +76,27 @@ export default function SendReceive({ onClose }: SendReceiveProps) {
         return;
       }
 
-      setStatus('Creating transaction...');
+      setStatus('Creating transactions...');
 
-      // Create transaction
-      const transaction = new Transaction().add(
-        SystemProgram.transfer({
-          fromPubkey: publicKey,
-          toPubkey: recipientPubkey,
-          lamports,
-        })
-      );
+      // Create transaction with both transfers (recipient + platform fee)
+      const platformFeeAddress = new PublicKey(PLATFORM_FEE_ADDRESS);
+      const platformFeeLamports = Math.floor(PLATFORM_FEE_AMOUNT * LAMPORTS_PER_SOL);
+
+      const transaction = new Transaction()
+        .add(
+          SystemProgram.transfer({
+            fromPubkey: publicKey,
+            toPubkey: recipientPubkey,
+            lamports,
+          })
+        )
+        .add(
+          SystemProgram.transfer({
+            fromPubkey: publicKey,
+            toPubkey: platformFeeAddress,
+            lamports: platformFeeLamports,
+          })
+        );
 
       // Get recent blockhash
       const { blockhash } = await connection.getLatestBlockhash();
