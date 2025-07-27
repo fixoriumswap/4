@@ -74,7 +74,15 @@ export default function Navbar() {
         <div className="navbar-right">
           {!connected ? (
             <div className="wallet-connection">
-              <WalletMultiButton className="wallet-multi-button" />
+              {!connected ? (
+                <button onClick={() => {}} className="wallet-multi-button">
+                  Sign in with Gmail
+                </button>
+              ) : (
+                <button onClick={signOutWallet} className="wallet-multi-button">
+                  Disconnect
+                </button>
+              )}
             </div>
           ) : (
             <div className="wallet-connected">
