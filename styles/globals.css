@@ -462,6 +462,18 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   color: #999;
 }
 
+.quote-row.total-cost {
+  border-top: 1px solid #444;
+  padding-top: 8px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.platform-fee {
+  color: #ff9800;
+  font-weight: bold;
+}
+
 .no-quote {
   text-align: center;
   color: #f73e3e;
