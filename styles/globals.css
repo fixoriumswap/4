@@ -212,29 +212,32 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   gap: 8px;
 }
 
-.wallet-connection-section {
+.single-wallet-button {
   display: flex;
   align-items: center;
-  gap: 8px;
 }
 
-.multi-wallet-button {
-  position: relative;
-}
-
-.multi-wallet-button .wallet-adapter-button {
-  background: #444c56;
-  color: #fff;
+.single-wallet-button .wallet-adapter-button {
+  background: #29d6b6;
+  color: #23272f;
   border: none;
   border-radius: 6px;
-  padding: 8px 12px;
-  font-size: 12px;
+  padding: 12px 24px;
+  font-weight: bold;
+  font-size: 14px;
   cursor: pointer;
   transition: background 0.2s;
+  min-width: 140px;
 }
 
-.multi-wallet-button .wallet-adapter-button:hover {
-  background: #555f70;
+.single-wallet-button .wallet-adapter-button:hover:not(.wallet-adapter-button-loading) {
+  background: #22bca7;
+}
+
+.single-wallet-button .wallet-adapter-button:disabled {
+  background: #666;
+  cursor: not-allowed;
+  color: #999;
 }
 
 .wallet-adapter-fallback {
