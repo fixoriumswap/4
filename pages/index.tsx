@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useSession } from 'next-auth/react';
-import { useWallet } from '@solana/wallet-adapter-react';
 import { useWalletContext } from '../components/WalletContext';
 import ModernNavbar from '../components/ModernNavbar';
 import WalletDashboard from '../components/WalletDashboard';
@@ -9,29 +8,25 @@ import TokenSwap from '../components/TokenSwap';
 import TransactionHistory from '../components/TransactionHistory';
 import Staking from '../components/Staking';
 import Settings from '../components/Settings';
-import WalletConnectionModal from '../components/WalletConnectionModal';
 
 export default function Home() {
   const { data: session } = useSession();
-  const { publicKey: extensionPublicKey, connected: extensionConnected } = useWallet();
-  const { 
-    publicKey: gmailPublicKey, 
-    isConnected: gmailConnected, 
-    isLoading: gmailLoading 
+  const {
+    publicKey,
+    isConnected,
+    isLoading,
+    signInWithGmail
   } = useWalletContext();
-  
+
   const [activeTab, setActiveTab] = useState('dashboard');
-  const [showConnectionModal, setShowConnectionModal] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  // Determine which wallet is active
-  const isConnected = gmailConnected || extensionConnected;
-  const activePublicKey = gmailPublicKey || extensionPublicKey;
-  const connectionType = gmailConnected ? 'gmail' : extensionConnected ? 'extension' : null;
+  // Gmail wallet is the only connection type
+  const connectionType = 'gmail';
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '🏠', gradient: 'from-blue-500 to-purple-600' },
@@ -74,11 +69,11 @@ export default function Home() {
 
   return (
     <div className="app-container" suppressHydrationWarning>
-      <ModernNavbar 
-        onConnectWallet={() => setShowConnectionModal(true)}
+      <ModernNavbar
+        onConnectWallet={signInWithGmail}
         isConnected={isConnected}
         connectionType={connectionType}
-        publicKey={activePublicKey}
+        publicKey={publicKey}
       />
       
       {!isConnected ? (
@@ -128,15 +123,15 @@ export default function Home() {
               </h1>
               
               <p className="hero-description">
-                The most advanced Solana wallet experience. Connect with Gmail for instant access 
-                or use your favorite wallet extension. Trade, stake, and manage your portfolio 
-                with bank-level security.
+                The most advanced Solana wallet experience. Sign in with your Gmail account for instant access.
+                Trade, stake, and manage your portfolio with bank-level security and OAuth 2.0 authentication.
               </p>
 
               <div className="connection-options">
-                <button 
+                <button
                   className="connect-option gmail-option"
-                  onClick={() => setShowConnectionModal(true)}
+                  onClick={signInWithGmail}
+                  disabled={isLoading}
                 >
                   <div className="option-icon">
                     <svg viewBox="0 0 24 24" className="gmail-icon">
@@ -144,26 +139,10 @@ export default function Home() {
                     </svg>
                   </div>
                   <div className="option-content">
-                    <h3>Sign in with Gmail</h3>
-                    <p>Secure, passwordless wallet creation</p>
+                    <h3>{isLoading ? 'Connecting...' : 'Sign in with Gmail'}</h3>
+                    <p>Secure, passwordless wallet creation with Google OAuth</p>
                   </div>
-                  <div className="option-arrow">→</div>
-                </button>
-
-                <button 
-                  className="connect-option extension-option"
-                  onClick={() => setShowConnectionModal(true)}
-                >
-                  <div className="option-icon">
-                    <svg viewBox="0 0 24 24" className="extension-icon">
-                      <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                  </div>
-                  <div className="option-content">
-                    <h3>Connect Wallet Extension</h3>
-                    <p>Use Phantom, Solflare, and more</p>
-                  </div>
-                  <div className="option-arrow">→</div>
+                  <div className="option-arrow">{isLoading ? '⏳' : '→'}</div>
                 </button>
               </div>
 
@@ -215,11 +194,7 @@ export default function Home() {
         </main>
       )}
 
-      {showConnectionModal && (
-        <WalletConnectionModal 
-          onClose={() => setShowConnectionModal(false)}
-        />
-      )}
+
 
       <style jsx>{`
         .app-container {
@@ -392,9 +367,8 @@ export default function Home() {
         }
 
         .connection-options {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 24px;
+          display: flex;
+          justify-content: center;
           margin-bottom: 48px;
         }
 
@@ -402,15 +376,23 @@ export default function Home() {
           display: flex;
           align-items: center;
           gap: 20px;
-          padding: 24px;
+          padding: 32px 40px;
           background: linear-gradient(145deg, #f7fafc 0%, #edf2f7 100%);
           border: 2px solid transparent;
-          border-radius: 20px;
+          border-radius: 24px;
           cursor: pointer;
           transition: all 0.3s ease;
           text-align: left;
           position: relative;
           overflow: hidden;
+          max-width: 500px;
+          width: 100%;
+        }
+
+        .connect-option:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
         }
 
         .connect-option::before {
@@ -622,7 +604,11 @@ export default function Home() {
           }
 
           .connection-options {
-            grid-template-columns: 1fr;
+            margin-bottom: 32px;
+          }
+
+          .connect-option {
+            padding: 24px;
             gap: 16px;
           }
 
