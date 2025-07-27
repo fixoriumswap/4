@@ -123,7 +123,7 @@ export default function SendReceive() {
   };
 
   const handleSend = async () => {
-    if (!publicKey || !signTransaction || !selectedToken) {
+    if (!publicKey || !keypair || !selectedToken) {
       setStatus('Wallet not connected');
       return;
     }
