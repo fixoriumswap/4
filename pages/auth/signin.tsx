@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
+import { useLocation, CountryInfo } from '../../hooks/useLocation'
 
 interface AuthState {
   step: 'phone' | 'code'
