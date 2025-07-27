@@ -111,19 +111,8 @@ function WalletSection() {
   return (
     <div className="navbar-right">
       {!connected ? (
-        <div className="wallet-connection-section">
-          <button
-            className="connect-wallet-btn"
-            onClick={handleConnectWallet}
-            disabled={connecting || customConnecting}
-          >
-            {connecting || customConnecting ? 'Connecting...' : 'Connect Wallet'}
-          </button>
-          
-          {/* Fallback multi-wallet button */}
-          <div className="multi-wallet-button">
-            <WalletMultiButton />
-          </div>
+        <div className="single-wallet-button">
+          <WalletMultiButton />
         </div>
       ) : (
         <div className="wallet-connected">
