@@ -83,7 +83,10 @@ function BalanceContent() {
     }
 
     if (connected && publicKey) {
+      setIsVisible(true);
       setLoading(true);
+      console.log('Balance component: Wallet connected, fetching balance for:', publicKey.toString());
+
       fetchTotalBalance().finally(() => setLoading(false));
 
       // Set up balance monitoring with adaptive interval
@@ -91,9 +94,13 @@ function BalanceContent() {
 
       return () => clearInterval(interval);
     } else {
+      setIsVisible(false);
       setTotalBalance(0);
       setError(null);
       setLoading(false);
+      if (!connected) {
+        console.log('Balance component: Wallet not connected');
+      }
     }
   }, [publicKey, connected, connection, retryCount]);
 
