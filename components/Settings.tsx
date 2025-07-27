@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 
 interface WalletSettings {
   autoConnect: boolean;
@@ -38,7 +38,7 @@ const EXPLORERS = [
 ];
 
 export default function Settings() {
-  const { publicKey, disconnect, connected } = useWallet();
+  const { publicKey, signOutWallet, isConnected: connected } = useWalletContext();
   const [settings, setSettings] = useState<WalletSettings>(DEFAULT_SETTINGS);
   const [showPrivacyInfo, setShowPrivacyInfo] = useState(false);
   const [exportInProgress, setExportInProgress] = useState(false);
