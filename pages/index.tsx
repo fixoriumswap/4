@@ -121,24 +121,24 @@ export default function Home() {
               </h1>
               
               <p className="hero-description">
-                The most advanced Solana wallet experience. Sign in with your mobile number for instant access.
-                Trade, stake, and manage your portfolio with bank-level security and SMS verification.
+                The most advanced Solana wallet experience. Sign in with your Gmail address for instant access.
+                Trade, stake, and manage your portfolio with bank-level security and email verification.
               </p>
 
               <div className="connection-options">
                 <button
-                  className="connect-option mobile-option"
-                  onClick={signInWithMobile}
+                  className="connect-option gmail-option"
+                  onClick={signInWithGmail}
                   disabled={isLoading}
                 >
                   <div className="option-icon">
-                    <svg viewBox="0 0 24 24" className="mobile-icon">
-                      <path fill="currentColor" d="M17 2H7c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM7 4h10v1H7V4zm0 15V7h10v12H7zm5-6c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1z"/>
+                    <svg viewBox="0 0 24 24" className="gmail-icon">
+                      <path fill="currentColor" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.5 4.64L12 9.548l6.5-4.908 1.573-1.147C21.69 2.28 24 3.434 24 5.457z"/>
                     </svg>
                   </div>
                   <div className="option-content">
-                    <h3>{isLoading ? 'Connecting...' : 'Sign in with Mobile'}</h3>
-                    <p>Secure wallet creation with SMS verification</p>
+                    <h3>{isLoading ? 'Connecting...' : 'Sign in with Gmail'}</h3>
+                    <p>Secure wallet creation with email verification</p>
                   </div>
                   <div className="option-arrow">{isLoading ? '⏳' : '→'}</div>
                 </button>
