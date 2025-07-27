@@ -1,9 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import { Connection, PublicKey, VersionedTransaction, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 import { createJupiterApiClient, QuoteResponse } from '@jup-ag/api';
 import TokenSearch from './TokenSearch';
 import WalletWrapper from './WalletWrapper';
+
+// Platform fee configuration
+const PLATFORM_FEE_AMOUNT = 0.0005; // 0.0005 SOL
+const PLATFORM_FEE_ADDRESS = 'FNVD1wied3e8WMuWs34KSamrCpughCMTjoXUE1ZXa6wM';
 
 const RPC_ENDPOINTS = [
   'https://api.mainnet-beta.solana.com',
@@ -376,7 +380,7 @@ function SwapFormContent() {
       if (confirmation.value.err) {
         setSwapStatus("Transaction failed: " + confirmation.value.err);
       } else {
-        setSwapStatus("✅ Swap successful! Tx: " + txid);
+        setSwapStatus("��� Swap successful! Tx: " + txid);
         // Reset form
         setAmount("");
       }
