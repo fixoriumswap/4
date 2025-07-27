@@ -121,8 +121,8 @@ export default function Home() {
               </h1>
               
               <p className="hero-description">
-                The most advanced Solana wallet experience. Sign in with your Gmail account for instant access.
-                Trade, stake, and manage your portfolio with bank-level security and OAuth 2.0 authentication.
+                The most advanced Solana wallet experience. Sign in with your mobile number for instant access.
+                Trade, stake, and manage your portfolio with bank-level security and SMS verification.
               </p>
 
               <div className="connection-options">
