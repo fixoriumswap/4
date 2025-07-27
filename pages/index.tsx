@@ -11,7 +11,7 @@ export default function Home() {
   const [showSetup, setShowSetup] = useState(false);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#181a20', color: '#fff', paddingBottom: '120px' }} suppressHydrationWarning>
+    <div style={{ minHeight: '100vh', background: '#181a20', color: '#fff', paddingBottom: isAuthenticated ? '120px' : '20px' }} suppressHydrationWarning>
       <Navbar />
       
       <main>
