@@ -138,7 +138,7 @@ function BalanceContent() {
     }
   }, [wallet, publicKey, connected, connection]);
 
-  if (!publicKey) return null;
+  if (!publicKey || !connected || !isVisible) return null;
 
   return (
     <div className="balance-container">
