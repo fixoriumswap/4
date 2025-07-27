@@ -221,6 +221,56 @@ export default function TokenSearch({ onTokenSelect, placeholder, selectedToken 
           }
         }
 
+        // 1.6. Try pump.fun API for pump.fun tokens
+        if (!tokenFound) {
+          try {
+            console.log('Trying pump.fun API...');
+            const pumpResponse = await fetch(`https://frontend-api.pump.fun/coins/${address}`);
+            if (pumpResponse.ok) {
+              const pumpData = await pumpResponse.json();
+              if (pumpData && pumpData.name) {
+                customToken = {
+                  address: address,
+                  symbol: pumpData.symbol || `${address.slice(0, 4)}...${address.slice(-4)}`,
+                  name: pumpData.name || `Pump Token ${address.slice(0, 8)}`,
+                  decimals: 6, // Most pump.fun tokens use 6 decimals
+                  logoURI: pumpData.image_uri
+                };
+                tokenFound = true;
+                console.log('Found token in pump.fun:', customToken);
+              }
+            }
+          } catch (pumpError) {
+            console.log('Pump.fun API error:', pumpError);
+          }
+        }
+
+        // 1.7. Try DexScreener API for additional token data
+        if (!tokenFound) {
+          try {
+            console.log('Trying DexScreener API...');
+            const dexResponse = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${address}`);
+            if (dexResponse.ok) {
+              const dexData = await dexResponse.json();
+              if (dexData && dexData.pairs && dexData.pairs.length > 0) {
+                const pair = dexData.pairs[0];
+                const baseToken = pair.baseToken.address.toLowerCase() === address.toLowerCase() ? pair.baseToken : pair.quoteToken;
+                customToken = {
+                  address: address,
+                  symbol: baseToken.symbol || `${address.slice(0, 4)}...${address.slice(-4)}`,
+                  name: baseToken.name || `DexToken ${address.slice(0, 8)}`,
+                  decimals: 9, // Default for most Solana tokens
+                  logoURI: pair.info?.imageUrl
+                };
+                tokenFound = true;
+                console.log('Found token in DexScreener:', customToken);
+              }
+            }
+          } catch (dexError) {
+            console.log('DexScreener API error:', dexError);
+          }
+        }
+
         // 2. Try Solana Token List (includes many pump.fun tokens)
         if (!tokenFound) {
           try {
