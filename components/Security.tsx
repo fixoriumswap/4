@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 
 interface SecurityHook {
   checkTransactionSecurity: (transaction: any) => SecurityResult;
@@ -35,7 +35,7 @@ const SAFE_VALIDATORS = new Set([
 ]);
 
 export function useSecurity(): SecurityHook {
-  const { publicKey } = useWallet();
+  const { publicKey } = useWalletContext();
 
   const checkTransactionSecurity = (transaction: any): SecurityResult => {
     const warnings: string[] = [];
