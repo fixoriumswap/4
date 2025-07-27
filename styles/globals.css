@@ -2913,6 +2913,254 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   }
 }
 
+/* Authentication Styles */
+.auth-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background: linear-gradient(135deg, #181a20 0%, #1e2128 100%);
+}
+
+.auth-content {
+  max-width: 500px;
+  width: 100%;
+  text-align: center;
+}
+
+.auth-header {
+  margin-bottom: 40px;
+}
+
+.auth-subtitle {
+  font-size: 1.1rem;
+  color: #9ca3af;
+  margin: 0;
+}
+
+.auth-form {
+  background: #23272f;
+  border: 2px solid #374151;
+  border-radius: 16px;
+  padding: 40px;
+  margin-bottom: 20px;
+}
+
+.input-group {
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.input-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.auth-input {
+  width: 100%;
+  padding: 14px 16px;
+  background: #444c56;
+  border: 2px solid #666;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 16px;
+  box-sizing: border-box;
+  transition: border-color 0.3s ease;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #29d6b6;
+}
+
+.mobile-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.country-code {
+  background: #555f70;
+  color: #fff;
+  padding: 14px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  white-space: nowrap;
+  border: 2px solid #666;
+}
+
+.mobile-input {
+  flex: 1;
+}
+
+.verification-input {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  letter-spacing: 8px;
+}
+
+.verification-info {
+  background: #2a2f37;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+}
+
+.verification-info p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 14px;
+}
+
+.mobile-display {
+  color: #29d6b6 !important;
+  font-weight: bold !important;
+  font-size: 16px !important;
+}
+
+.demo-code {
+  background: rgba(41, 214, 182, 0.1);
+  border: 1px solid rgba(41, 214, 182, 0.3);
+  border-radius: 6px;
+  padding: 12px;
+  margin-top: 12px;
+}
+
+.demo-code p {
+  color: #29d6b6 !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+}
+
+.input-hint {
+  margin-top: 8px;
+}
+
+.input-hint p {
+  margin: 0;
+  color: #9ca3af;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.error-message {
+  background: rgba(244, 67, 54, 0.1);
+  border: 1px solid rgba(244, 67, 54, 0.3);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 20px;
+  color: #f44336;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.auth-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 30px;
+}
+
+.auth-button {
+  width: 100%;
+  padding: 16px 24px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.auth-button.primary {
+  background: linear-gradient(135deg, #29D6B6, #16a085);
+  color: #fff;
+}
+
+.auth-button.primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #16a085, #0d7d61);
+  transform: translateY(-2px);
+}
+
+.auth-button.secondary {
+  background: #444c56;
+  color: #fff;
+  border: 2px solid #666;
+}
+
+.auth-button.secondary:hover:not(:disabled) {
+  background: #555f70;
+  border-color: #29d6b6;
+}
+
+.auth-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.auth-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.auth-links {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.link-button {
+  background: none;
+  border: none;
+  color: #29d6b6;
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 14px;
+  transition: color 0.3s ease;
+}
+
+.link-button:hover {
+  color: #16a085;
+}
+
+.auth-footer {
+  background: #23272f;
+  border: 1px solid #374151;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.recovery-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #9ca3af;
+}
+
+.recovery-info svg {
+  width: 24px;
+  height: 24px;
+  color: #29d6b6;
+  flex-shrink: 0;
+}
+
+.recovery-info p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
 /* Wallet Setup Styles */
 .wallet-setup-container {
   display: flex;
