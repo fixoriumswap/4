@@ -79,6 +79,15 @@ export default function SignIn() {
     return `${phone.slice(0, 3)} ${phone.slice(3, 6)} ${phone.slice(6, 10)}`
   }
 
+  const handleCountrySelect = (country: CountryInfo) => {
+    setState(prev => ({
+      ...prev,
+      selectedCountry: country,
+      showCountryPicker: false,
+      phoneNumber: '' // Clear phone number when country changes
+    }))
+  }
+
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
