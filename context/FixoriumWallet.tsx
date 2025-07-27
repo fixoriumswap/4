@@ -212,6 +212,10 @@ export function FixoriumWalletProvider({ children }: { children: ReactNode }) {
         console.error('All RPC endpoints failed:', fallbackError);
         // Set balance to 0 on error to prevent app crash
         setBalance(0);
+        // Optional: Show user notification about connectivity issues
+        if (typeof window !== 'undefined') {
+          console.warn('Network connectivity issues. Please try again later.');
+        }
       }
     }
   };
