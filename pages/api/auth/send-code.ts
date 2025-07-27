@@ -84,10 +84,17 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       }
     }
 
-    res.status(200).json({ 
-      success: true, 
+    // In development mode, include the code in the response for easy testing
+    const isDevelopment = process.env.NODE_ENV === 'development'
+
+    res.status(200).json({
+      success: true,
       message: 'Verification code sent successfully',
-      expiresIn: 10 * 60 * 1000 // 10 minutes
+      expiresIn: 10 * 60 * 1000, // 10 minutes
+      ...(isDevelopment && {
+        devCode: code,
+        devMessage: `Development mode: Your verification code is ${code}`
+      })
     })
 
   } catch (error) {
