@@ -1,31 +1,45 @@
 import React, { useState } from 'react';
-import { useFixoriumWallet } from '../context/FixoriumWallet';
+import SignUp from './SignUp';
+import SignIn from './SignIn';
+import PasswordRecovery from './PasswordRecovery';
+
+type AuthView = 'options' | 'signup' | 'signin' | 'recovery';
 
 export default function WalletSetup() {
-  const { signInWithGoogle, loading } = useFixoriumWallet();
-  const [isCreating, setIsCreating] = useState(false);
+  const [currentView, setCurrentView] = useState<AuthView>('options');
 
-  const handleCreateWallet = async () => {
-    setIsCreating(true);
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      console.error('Error creating wallet:', error);
-    } finally {
-      setIsCreating(false);
-    }
+  const handleAuthSuccess = () => {
+    // The parent component will handle the authentication success
+    // by checking the authentication state in the context
   };
 
-  const handleRecoverWallet = async () => {
-    setIsCreating(true);
-    try {
-      await signInWithGoogle();
-    } catch (error) {
-      console.error('Error recovering wallet:', error);
-    } finally {
-      setIsCreating(false);
-    }
-  };
+  if (currentView === 'signup') {
+    return (
+      <SignUp
+        onSuccess={handleAuthSuccess}
+        onBackToOptions={() => setCurrentView('options')}
+      />
+    );
+  }
+
+  if (currentView === 'signin') {
+    return (
+      <SignIn
+        onSuccess={handleAuthSuccess}
+        onBackToOptions={() => setCurrentView('options')}
+        onForgotPassword={() => setCurrentView('recovery')}
+      />
+    );
+  }
+
+  if (currentView === 'recovery') {
+    return (
+      <PasswordRecovery
+        onSuccess={handleAuthSuccess}
+        onBackToSignIn={() => setCurrentView('signin')}
+      />
+    );
+  }
 
   return (
     <div className="wallet-setup-container">
@@ -43,32 +57,30 @@ export default function WalletSetup() {
 
         <div className="setup-options">
           <div className="single-option-card">
-            <h2>Access Your Wallet</h2>
-            <p>Use your Gmail account to create a new wallet or recover an existing one. One Gmail = One permanent wallet address.</p>
-
+            <h2>Welcome to Fixorium</h2>
+            <p>Create a new account or sign in to access your wallet. Your account is secured with email, password, and mobile verification.</p>
+            
             <div className="action-buttons">
-              <button
+              <button 
                 className="setup-button create-button"
-                onClick={handleCreateWallet}
-                disabled={isCreating || loading}
+                onClick={() => setCurrentView('signup')}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <circle cx="12" cy="12" r="10"/>
                   <line x1="12" y1="8" x2="12" y2="16"/>
                   <line x1="8" y1="12" x2="16" y2="12"/>
                 </svg>
-                {isCreating ? 'Processing...' : 'Create New Wallet'}
+                Create New Account
               </button>
-
-              <button
+              
+              <button 
                 className="setup-button recover-button"
-                onClick={handleRecoverWallet}
-                disabled={isCreating || loading}
+                onClick={() => setCurrentView('signin')}
               >
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                  <path d="M15 3h6v6M9 21H3v-6M21 3l-7 7M3 21l7-7"/>
                 </svg>
-                {isCreating ? 'Processing...' : 'Recover Wallet'}
+                Sign In to Account
               </button>
             </div>
           </div>
@@ -79,7 +91,7 @@ export default function WalletSetup() {
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
               <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
             </svg>
-            <p>Your wallet is secured with Gmail authentication. One account creates one permanent address.</p>
+            <p>Your wallet is secured with multi-factor authentication including mobile verification.</p>
           </div>
         </div>
       </div>
