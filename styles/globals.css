@@ -206,6 +206,19 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   background: #e53535;
 }
 
+.wallet-connection-options {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.wallet-adapter-fallback {
+  opacity: 0;
+  pointer-events: none;
+  position: absolute;
+  top: -9999px;
+}
+
 
 
 .connect-wallet-btn {
