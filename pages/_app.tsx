@@ -22,9 +22,35 @@ export default function App({ Component, pageProps }: AppProps) {
   }, [network]);
 
   const wallets = useMemo(
-    () => [
-      new PhantomWalletAdapter(),
-    ],
+    () => {
+      const walletAdapters = [];
+
+      try {
+        walletAdapters.push(new PhantomWalletAdapter());
+      } catch (error) {
+        console.warn('PhantomWalletAdapter failed to initialize:', error);
+      }
+
+      try {
+        walletAdapters.push(new SolflareWalletAdapter());
+      } catch (error) {
+        console.warn('SolflareWalletAdapter failed to initialize:', error);
+      }
+
+      try {
+        walletAdapters.push(new TorusWalletAdapter());
+      } catch (error) {
+        console.warn('TorusWalletAdapter failed to initialize:', error);
+      }
+
+      try {
+        walletAdapters.push(new LedgerWalletAdapter());
+      } catch (error) {
+        console.warn('LedgerWalletAdapter failed to initialize:', error);
+      }
+
+      return walletAdapters;
+    },
     []
   );
 
