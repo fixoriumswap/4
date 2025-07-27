@@ -37,7 +37,6 @@ export default function Navbar() {
           ) : (
             <div className="user-info">
               <div className="user-details">
-                <span className="user-email">{user?.email}</span>
                 <span className="wallet-address" title={user?.publicKey}>
                   {shortAddr(user?.publicKey || '')}
                 </span>
