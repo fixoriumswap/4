@@ -2998,7 +2998,7 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
 
 .setup-button {
   width: 100%;
-  padding: 15px 30px;
+  padding: 18px 30px;
   border: none;
   border-radius: 12px;
   font-size: 1.1rem;
@@ -3007,6 +3007,15 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   transition: all 0.3s ease;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.setup-button svg {
+  width: 20px;
+  height: 20px;
 }
 
 .create-button {
