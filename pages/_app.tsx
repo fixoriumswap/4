@@ -1,72 +1,11 @@
 import '../styles/globals.css'
-import '@solana/wallet-adapter-react-ui/styles.css';
 import type { AppProps } from 'next/app'
-import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
-import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
-import { PhantomWalletAdapter, SolflareWalletAdapter, TorusWalletAdapter, LedgerWalletAdapter } from '@solana/wallet-adapter-wallets';
-import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
-import { clusterApiUrl } from '@solana/web3.js';
-import { useMemo } from 'react';
+import { FixoriumWalletProvider } from '../context/FixoriumWallet'
 
 export default function App({ Component, pageProps }: AppProps) {
-  const network = WalletAdapterNetwork.Mainnet;
-  // Use multiple high-quality RPC endpoints for better reliability
-  const endpoint = useMemo(() => {
-    // Try to use a high-performance RPC endpoint first, fallback to default
-    const rpcEndpoints = [
-      'https://api.mainnet-beta.solana.com',
-      'https://solana-api.projectserum.com',
-      clusterApiUrl(network)
-    ];
-    return rpcEndpoints[0]; // Use the first one by default
-  }, [network]);
-
-  const wallets = useMemo(
-    () => {
-      const walletAdapters = [];
-
-      try {
-        walletAdapters.push(new PhantomWalletAdapter());
-      } catch (error) {
-        console.warn('PhantomWalletAdapter failed to initialize:', error);
-      }
-
-      try {
-        walletAdapters.push(new SolflareWalletAdapter());
-      } catch (error) {
-        console.warn('SolflareWalletAdapter failed to initialize:', error);
-      }
-
-      try {
-        walletAdapters.push(new TorusWalletAdapter());
-      } catch (error) {
-        console.warn('TorusWalletAdapter failed to initialize:', error);
-      }
-
-      try {
-        walletAdapters.push(new LedgerWalletAdapter());
-      } catch (error) {
-        console.warn('LedgerWalletAdapter failed to initialize:', error);
-      }
-
-      return walletAdapters;
-    },
-    []
-  );
-
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider
-        wallets={wallets}
-        autoConnect={true}
-        onError={(error) => {
-          console.error('Wallet error:', error);
-        }}
-      >
-        <WalletModalProvider>
-          <Component {...pageProps} />
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+    <FixoriumWalletProvider>
+      <Component {...pageProps} />
+    </FixoriumWalletProvider>
   );
 }
