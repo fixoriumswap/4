@@ -41,19 +41,28 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     const { phoneNumber, countryCode, type = 'signin' } = req.body
 
+    console.log('📞 Send Code Request:', { phoneNumber, countryCode, type })
+
     if (!phoneNumber) {
+      console.log('❌ No phone number provided')
       return res.status(400).json({ error: 'Phone number is required' })
     }
 
     if (!countryCode) {
+      console.log('❌ No country code provided')
       return res.status(400).json({ error: 'Country code is required' })
     }
 
     // Normalize phone number
     const normalizedPhone = phoneNumber.replace(/[\s\-\(\)]/g, '')
+    console.log('📱 Normalized phone:', normalizedPhone)
 
     if (!isValidPhoneNumber(normalizedPhone)) {
-      return res.status(400).json({ error: 'Invalid phone number format' })
+      console.log('❌ Invalid phone number format:', normalizedPhone)
+      return res.status(400).json({
+        error: 'Invalid phone number format',
+        debug: `Received: ${normalizedPhone}`
+      })
     }
 
     // Check rate limiting (max 3 attempts per phone per 10 minutes)
