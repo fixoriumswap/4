@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useSession, signOut } from 'next-auth/react';
+import { useWalletContext } from './WalletContext';
 import { PublicKey } from '@solana/web3.js';
 
 interface ModernNavbarProps {
