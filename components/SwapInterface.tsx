@@ -11,7 +11,8 @@ interface Token {
   logoURI?: string;
 }
 
-const connection = new Connection('https://api.mainnet-beta.solana.com');
+// Import the connection function from context
+import { useFixoriumWallet, PLATFORM_FEE_AMOUNT, PLATFORM_FEE_ADDRESS } from '../context/FixoriumWallet';
 
 export default function SwapInterface() {
   const { balance, getKeypair, publicKey, refreshBalance } = useFixoriumWallet();
