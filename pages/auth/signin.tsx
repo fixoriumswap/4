@@ -753,26 +753,130 @@ export default function SignIn() {
           font-size: 14px;
         }
 
+        .location-info {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-bottom: 8px;
+          font-size: 12px;
+          color: #6b7280;
+        }
+
+        .location-icon {
+          font-size: 14px;
+        }
+
         .phone-input-container {
           display: flex;
           border: 2px solid #e5e7eb;
           border-radius: 12px;
-          overflow: hidden;
+          overflow: visible;
           transition: border-color 0.3s ease;
+          position: relative;
         }
 
         .phone-input-container:focus-within {
           border-color: #667eea;
         }
 
-        .country-code {
+        .country-selector {
           background: #f9fafb;
-          padding: 16px;
+          padding: 16px 12px;
           border-right: 1px solid #e5e7eb;
           font-weight: 600;
           color: #374151;
           display: flex;
           align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          transition: background 0.3s ease;
+          min-width: 80px;
+        }
+
+        .country-selector:hover {
+          background: #f3f4f6;
+        }
+
+        .country-flag {
+          font-size: 18px;
+        }
+
+        .country-code {
+          font-size: 14px;
+        }
+
+        .dropdown-arrow {
+          font-size: 10px;
+          color: #9ca3af;
+          transition: transform 0.3s ease;
+        }
+
+        .country-picker {
+          position: absolute;
+          top: 100%;
+          left: 0;
+          right: 0;
+          background: white;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+          z-index: 1000;
+          max-height: 300px;
+          overflow: hidden;
+          margin-top: 4px;
+        }
+
+        .country-search {
+          padding: 12px;
+          border-bottom: 1px solid #e5e7eb;
+        }
+
+        .country-search-input {
+          width: 100%;
+          padding: 8px 12px;
+          border: 1px solid #d1d5db;
+          border-radius: 8px;
+          font-size: 14px;
+          outline: none;
+        }
+
+        .country-search-input:focus {
+          border-color: #667eea;
+        }
+
+        .country-list {
+          max-height: 200px;
+          overflow-y: auto;
+        }
+
+        .country-option {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px;
+          cursor: pointer;
+          transition: background 0.2s ease;
+        }
+
+        .country-option:hover {
+          background: #f9fafb;
+        }
+
+        .country-flag-option {
+          font-size: 18px;
+          width: 24px;
+        }
+
+        .country-name {
+          flex: 1;
+          font-size: 14px;
+          color: #374151;
+        }
+
+        .country-dial-code {
+          font-size: 14px;
+          color: #6b7280;
+          font-weight: 600;
         }
 
         .phone-input {
