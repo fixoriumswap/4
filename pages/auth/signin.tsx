@@ -272,8 +272,14 @@ export default function SignIn() {
         return
       }
 
-      setState(prev => ({ 
-        ...prev, 
+      // Show development verification code if available
+      if (data.devCode) {
+        alert(`Development Mode: Your verification code is ${data.devCode}`)
+        console.log(`🔑 Verification Code: ${data.devCode}`)
+      }
+
+      setState(prev => ({
+        ...prev,
         loading: false,
         countdown: 60,
         canResend: false,
