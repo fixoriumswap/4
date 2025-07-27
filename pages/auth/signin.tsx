@@ -1,29 +1,240 @@
-import React from 'react'
-import { signIn, getSession } from 'next-auth/react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
-import { useEffect } from 'react'
+
+interface AuthState {
+  step: 'phone' | 'code'
+  phoneNumber: string
+  code: string
+  loading: boolean
+  error: string | null
+  countdown: number
+  canResend: boolean
+}
 
 export default function SignIn() {
   const router = useRouter()
+  const { type = 'signin' } = router.query // 'signin' or 'recovery'
+  
+  const [state, setState] = useState<AuthState>({
+    step: 'phone',
+    phoneNumber: '',
+    code: '',
+    loading: false,
+    error: null,
+    countdown: 0,
+    canResend: true
+  })
 
+  const codeInputsRef = useRef<(HTMLInputElement | null)[]>([])
+  const countdownRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Check if user is already authenticated
   useEffect(() => {
-    // Check if user is already signed in
-    getSession().then((session) => {
-      if (session) {
-        router.push('/')
-      }
-    })
+    fetch('/api/auth/session')
+      .then(res => res.json())
+      .then(data => {
+        if (data.isValid) {
+          router.push('/')
+        }
+      })
+      .catch(() => {
+        // Not authenticated, stay on signin page
+      })
   }, [router])
 
-  const handleGoogleSignIn = async () => {
-    try {
-      await signIn('google', { 
-        callbackUrl: '/',
-        redirect: true 
-      })
-    } catch (error) {
-      console.error('Sign in error:', error)
+  // Countdown timer for resend
+  useEffect(() => {
+    if (state.countdown > 0) {
+      countdownRef.current = setTimeout(() => {
+        setState(prev => ({ ...prev, countdown: prev.countdown - 1 }))
+      }, 1000)
+    } else if (state.countdown === 0 && !state.canResend) {
+      setState(prev => ({ ...prev, canResend: true }))
     }
+
+    return () => {
+      if (countdownRef.current) {
+        clearTimeout(countdownRef.current)
+      }
+    }
+  }, [state.countdown, state.canResend])
+
+  const formatPhoneNumber = (value: string) => {
+    const phone = value.replace(/\D/g, '')
+    if (phone.length <= 3) return phone
+    if (phone.length <= 6) return `${phone.slice(0, 3)} ${phone.slice(3)}`
+    return `${phone.slice(0, 3)} ${phone.slice(3, 6)} ${phone.slice(6, 10)}`
+  }
+
+  const handlePhoneSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    
+    if (!state.phoneNumber.trim()) {
+      setState(prev => ({ ...prev, error: 'Please enter your phone number' }))
+      return
+    }
+
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phoneNumber: state.phoneNumber,
+          type: type as string
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setState(prev => ({ ...prev, error: data.error, loading: false }))
+        return
+      }
+
+      setState(prev => ({ 
+        ...prev, 
+        step: 'code', 
+        loading: false,
+        countdown: 60,
+        canResend: false
+      }))
+
+      // Focus first code input
+      setTimeout(() => {
+        codeInputsRef.current[0]?.focus()
+      }, 100)
+
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Network error. Please try again.', 
+        loading: false 
+      }))
+    }
+  }
+
+  const handleCodeChange = (index: number, value: string) => {
+    if (value.length > 1) return // Prevent multiple characters
+
+    const newCode = state.code.split('')
+    newCode[index] = value
+    const updatedCode = newCode.join('')
+
+    setState(prev => ({ ...prev, code: updatedCode, error: null }))
+
+    // Auto-focus next input
+    if (value && index < 5) {
+      codeInputsRef.current[index + 1]?.focus()
+    }
+
+    // Auto-submit if code is complete
+    if (updatedCode.length === 6 && !updatedCode.includes('')) {
+      handleCodeSubmit(updatedCode)
+    }
+  }
+
+  const handleCodeKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !state.code[index] && index > 0) {
+      codeInputsRef.current[index - 1]?.focus()
+    }
+  }
+
+  const handleCodeSubmit = async (codeToSubmit?: string) => {
+    const finalCode = codeToSubmit || state.code
+    
+    if (finalCode.length !== 6) {
+      setState(prev => ({ ...prev, error: 'Please enter the complete 6-digit code' }))
+      return
+    }
+
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await fetch('/api/auth/verify-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phoneNumber: state.phoneNumber,
+          code: finalCode,
+          type: type as string
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setState(prev => ({ ...prev, error: data.error, loading: false }))
+        return
+      }
+
+      // Success! Redirect to main app
+      router.push('/')
+
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Network error. Please try again.', 
+        loading: false 
+      }))
+    }
+  }
+
+  const handleResendCode = async () => {
+    if (!state.canResend) return
+
+    setState(prev => ({ ...prev, loading: true, error: null }))
+
+    try {
+      const response = await fetch('/api/auth/send-code', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phoneNumber: state.phoneNumber,
+          type: type as string
+        })
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        setState(prev => ({ ...prev, error: data.error, loading: false }))
+        return
+      }
+
+      setState(prev => ({ 
+        ...prev, 
+        loading: false,
+        countdown: 60,
+        canResend: false,
+        code: ''
+      }))
+
+      // Clear and focus first input
+      codeInputsRef.current.forEach(input => {
+        if (input) input.value = ''
+      })
+      codeInputsRef.current[0]?.focus()
+
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: 'Network error. Please try again.', 
+        loading: false 
+      }))
+    }
+  }
+
+  const handleBackToPhone = () => {
+    setState(prev => ({ 
+      ...prev, 
+      step: 'phone', 
+      code: '', 
+      error: null,
+      countdown: 0,
+      canResend: true
+    }))
   }
 
   return (
@@ -51,71 +262,207 @@ export default function SignIn() {
             </svg>
           </div>
           <h1 className="auth-title">Solana Wallet</h1>
-          <p className="auth-subtitle">Secure, Modern, Decentralized</p>
+          <p className="auth-subtitle">
+            {type === 'recovery' ? 'Recover Your Account' : 'Secure, Modern, Decentralized'}
+          </p>
         </div>
 
         <div className="auth-content">
-          <div className="auth-description">
-            <h2>Welcome to the Future of Finance</h2>
-            <p>
-              Create your secure Solana wallet with just your Gmail account. 
-              No seed phrases to remember, no complex setups.
-            </p>
-          </div>
+          {state.step === 'phone' ? (
+            <>
+              <div className="auth-description">
+                <h2>
+                  {type === 'recovery' ? 'Account Recovery' : 'Welcome to the Future of Finance'}
+                </h2>
+                <p>
+                  {type === 'recovery' 
+                    ? 'Enter your mobile number to recover your Solana wallet. We\'ll send you a verification code to restore access.'
+                    : 'Create your secure Solana wallet with just your mobile number. No seed phrases to remember, no complex setups.'
+                  }
+                </p>
+              </div>
 
-          <div className="auth-features">
-            <div className="feature-grid">
-              <div className="feature-item">
-                <div className="feature-icon">🔒</div>
-                <h3>Secure Login</h3>
-                <p>OAuth 2.0 authentication with Google</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">⚡</div>
-                <h3>Lightning Fast</h3>
-                <p>Instant wallet creation and access</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">🌐</div>
-                <h3>Cross-Platform</h3>
-                <p>Works on all devices and browsers</p>
-              </div>
-              <div className="feature-item">
-                <div className="feature-icon">💎</div>
-                <h3>Full DeFi Access</h3>
-                <p>Swap, stake, and manage all Solana tokens</p>
-              </div>
-            </div>
-          </div>
+              <form onSubmit={handlePhoneSubmit} className="phone-form">
+                <div className="input-group">
+                  <label htmlFor="phone">Mobile Number</label>
+                  <div className="phone-input-container">
+                    <span className="country-code">+1</span>
+                    <input
+                      id="phone"
+                      type="tel"
+                      value={formatPhoneNumber(state.phoneNumber)}
+                      onChange={(e) => {
+                        const value = e.target.value.replace(/\D/g, '')
+                        if (value.length <= 10) {
+                          setState(prev => ({ ...prev, phoneNumber: value, error: null }))
+                        }
+                      }}
+                      placeholder="Enter your mobile number"
+                      className="phone-input"
+                      disabled={state.loading}
+                    />
+                  </div>
+                </div>
 
-          <button 
-            onClick={handleGoogleSignIn}
-            className="google-signin-button"
-          >
-            <svg className="google-icon" viewBox="0 0 24 24">
-              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-            </svg>
-            Continue with Google
-          </button>
+                {state.error && (
+                  <div className="error-message">
+                    <span className="error-icon">⚠️</span>
+                    {state.error}
+                  </div>
+                )}
 
-          <div className="auth-security">
-            <div className="security-badge">
-              <span className="security-icon">🛡️</span>
-              <div className="security-text">
-                <strong>Bank-Level Security</strong>
-                <p>Your keys are generated securely and never stored on our servers</p>
+                <button 
+                  type="submit" 
+                  className="submit-button"
+                  disabled={state.loading || state.phoneNumber.length < 10}
+                >
+                  {state.loading ? (
+                    <>
+                      <div className="spinner"></div>
+                      <span>Sending Code...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="button-icon">📱</span>
+                      <span>{type === 'recovery' ? 'Send Recovery Code' : 'Send Verification Code'}</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              <div className="auth-features">
+                <div className="feature-grid">
+                  <div className="feature-item">
+                    <div className="feature-icon">🔒</div>
+                    <h3>Secure Login</h3>
+                    <p>SMS verification for secure access</p>
+                  </div>
+                  <div className="feature-item">
+                    <div className="feature-icon">⚡</div>
+                    <h3>Lightning Fast</h3>
+                    <p>Instant wallet creation and access</p>
+                  </div>
+                  <div className="feature-item">
+                    <div className="feature-icon">🌐</div>
+                    <h3>Cross-Platform</h3>
+                    <p>Works on all devices and browsers</p>
+                  </div>
+                  <div className="feature-item">
+                    <div className="feature-icon">💎</div>
+                    <h3>Full DeFi Access</h3>
+                    <p>Swap, stake, and manage all Solana tokens</p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
+            </>
+          ) : (
+            <>
+              <div className="auth-description">
+                <h2>Enter Verification Code</h2>
+                <p>
+                  We've sent a 6-digit code to <strong>{formatPhoneNumber(state.phoneNumber)}</strong>. 
+                  Enter the code below to {type === 'recovery' ? 'recover your account' : 'create your wallet'}.
+                </p>
+              </div>
+
+              <div className="code-form">
+                <div className="code-inputs">
+                  {[0, 1, 2, 3, 4, 5].map((index) => (
+                    <input
+                      key={index}
+                      ref={(el) => codeInputsRef.current[index] = el}
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={1}
+                      value={state.code[index] || ''}
+                      onChange={(e) => handleCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleCodeKeyDown(index, e)}
+                      className="code-input"
+                      disabled={state.loading}
+                    />
+                  ))}
+                </div>
+
+                {state.error && (
+                  <div className="error-message">
+                    <span className="error-icon">⚠️</span>
+                    {state.error}
+                  </div>
+                )}
+
+                <div className="code-actions">
+                  <button
+                    type="button"
+                    onClick={() => handleCodeSubmit()}
+                    disabled={state.loading || state.code.length !== 6}
+                    className="submit-button"
+                  >
+                    {state.loading ? (
+                      <>
+                        <div className="spinner"></div>
+                        <span>Verifying...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span className="button-icon">✅</span>
+                        <span>{type === 'recovery' ? 'Recover Account' : 'Verify & Create Wallet'}</span>
+                      </>
+                    )}
+                  </button>
+
+                  <div className="resend-section">
+                    {state.countdown > 0 ? (
+                      <p className="countdown-text">
+                        Resend code in {state.countdown}s
+                      </p>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResendCode}
+                        disabled={state.loading || !state.canResend}
+                        className="resend-button"
+                      >
+                        Resend Code
+                      </button>
+                    )}
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleBackToPhone}
+                    className="back-button"
+                    disabled={state.loading}
+                  >
+                    ← Change Phone Number
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         <div className="auth-footer">
-          <p>
+          <div className="auth-links">
+            {type === 'recovery' ? (
+              <button 
+                onClick={() => router.push('/auth/signin')} 
+                className="link-button"
+              >
+                Back to Sign In
+              </button>
+            ) : (
+              <button 
+                onClick={() => router.push('/auth/signin?type=recovery')} 
+                className="link-button"
+              >
+                Need to recover your account?
+              </button>
+            )}
+          </div>
+          <p className="auth-disclaimer">
             By continuing, you agree to our Terms of Service and Privacy Policy.
-            Your wallet keys are generated deterministically from your Google account.
+            Your wallet keys are generated securely from your mobile number.
           </p>
         </div>
       </div>
@@ -231,8 +578,191 @@ export default function SignIn() {
           line-height: 1.6;
         }
 
+        .phone-form, .code-form {
+          margin-bottom: 32px;
+        }
+
+        .input-group {
+          margin-bottom: 24px;
+        }
+
+        .input-group label {
+          display: block;
+          margin-bottom: 8px;
+          font-weight: 600;
+          color: #374151;
+          font-size: 14px;
+        }
+
+        .phone-input-container {
+          display: flex;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          overflow: hidden;
+          transition: border-color 0.3s ease;
+        }
+
+        .phone-input-container:focus-within {
+          border-color: #667eea;
+        }
+
+        .country-code {
+          background: #f9fafb;
+          padding: 16px;
+          border-right: 1px solid #e5e7eb;
+          font-weight: 600;
+          color: #374151;
+          display: flex;
+          align-items: center;
+        }
+
+        .phone-input {
+          flex: 1;
+          padding: 16px;
+          border: none;
+          font-size: 16px;
+          background: transparent;
+          outline: none;
+        }
+
+        .phone-input::placeholder {
+          color: #9ca3af;
+        }
+
+        .code-inputs {
+          display: flex;
+          gap: 12px;
+          justify-content: center;
+          margin-bottom: 24px;
+        }
+
+        .code-input {
+          width: 48px;
+          height: 56px;
+          border: 2px solid #e5e7eb;
+          border-radius: 12px;
+          text-align: center;
+          font-size: 20px;
+          font-weight: 600;
+          transition: all 0.3s ease;
+          outline: none;
+        }
+
+        .code-input:focus {
+          border-color: #667eea;
+          box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .code-input:disabled {
+          background: #f9fafb;
+          opacity: 0.7;
+        }
+
+        .error-message {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          padding: 12px 16px;
+          background: #fef2f2;
+          border: 1px solid #fecaca;
+          border-radius: 8px;
+          color: #dc2626;
+          font-size: 14px;
+          margin-bottom: 16px;
+        }
+
+        .error-icon {
+          font-size: 16px;
+        }
+
+        .submit-button {
+          width: 100%;
+          padding: 16px 24px;
+          background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+          border: none;
+          border-radius: 12px;
+          color: white;
+          font-size: 16px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
+        .submit-button:hover:not(:disabled) {
+          transform: translateY(-2px);
+          box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        }
+
+        .submit-button:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .button-icon {
+          font-size: 18px;
+        }
+
+        .spinner {
+          width: 20px;
+          height: 20px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top: 2px solid white;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+
+        .code-actions {
+          text-align: center;
+        }
+
+        .resend-section {
+          margin: 16px 0;
+        }
+
+        .countdown-text {
+          margin: 0;
+          color: #6b7280;
+          font-size: 14px;
+        }
+
+        .resend-button, .back-button {
+          background: none;
+          border: none;
+          color: #667eea;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 8px 16px;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+        }
+
+        .resend-button:hover:not(:disabled), .back-button:hover:not(:disabled) {
+          background: rgba(102, 126, 234, 0.1);
+        }
+
+        .resend-button:disabled, .back-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+
+        .back-button {
+          margin-top: 16px;
+        }
+
         .auth-features {
-          margin-bottom: 40px;
+          margin-bottom: 32px;
         }
 
         .feature-grid {
@@ -275,91 +805,33 @@ export default function SignIn() {
           line-height: 1.4;
         }
 
-        .google-signin-button {
-          width: 100%;
-          padding: 18px 24px;
-          background: #fff;
-          border: 2px solid #dadce0;
-          border-radius: 16px;
-          color: #3c4043;
-          font-size: 16px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          gap: 12px;
-          margin-bottom: 32px;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .google-signin-button::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: -100%;
-          width: 100%;
-          height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.8), transparent);
-          transition: left 0.5s ease;
-        }
-
-        .google-signin-button:hover::before {
-          left: 100%;
-        }
-
-        .google-signin-button:hover {
-          border-color: #4285f4;
-          box-shadow: 0 8px 24px rgba(66, 133, 244, 0.2);
-          transform: translateY(-2px);
-        }
-
-        .google-icon {
-          width: 24px;
-          height: 24px;
-        }
-
-        .auth-security {
-          margin-bottom: 24px;
-        }
-
-        .security-badge {
-          display: flex;
-          align-items: center;
-          gap: 16px;
-          padding: 20px;
-          background: linear-gradient(145deg, #ecfdf5 0%, #d1fae5 100%);
-          border-radius: 16px;
-          border: 1px solid #a7f3d0;
-        }
-
-        .security-icon {
-          font-size: 24px;
-        }
-
-        .security-text strong {
-          display: block;
-          color: #065f46;
-          font-size: 14px;
-          margin-bottom: 4px;
-        }
-
-        .security-text p {
-          margin: 0;
-          color: #047857;
-          font-size: 12px;
-          line-height: 1.4;
-        }
-
         .auth-footer {
           text-align: center;
           padding-top: 24px;
           border-top: 1px solid #e5e7eb;
         }
 
-        .auth-footer p {
+        .auth-links {
+          margin-bottom: 16px;
+        }
+
+        .link-button {
+          background: none;
+          border: none;
+          color: #667eea;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          padding: 8px 16px;
+          border-radius: 8px;
+          transition: all 0.3s ease;
+        }
+
+        .link-button:hover {
+          background: rgba(102, 126, 234, 0.1);
+        }
+
+        .auth-disclaimer {
           margin: 0;
           color: #9ca3af;
           font-size: 12px;
@@ -385,10 +857,14 @@ export default function SignIn() {
             font-size: 20px;
           }
 
-          .security-badge {
-            flex-direction: column;
-            text-align: center;
-            gap: 12px;
+          .code-inputs {
+            gap: 8px;
+          }
+
+          .code-input {
+            width: 40px;
+            height: 48px;
+            font-size: 18px;
           }
         }
       `}</style>
