@@ -2,7 +2,7 @@
   "name": "solana-comprehensive-wallet",
   "version": "2.0.0",
   "private": true,
-  "description": "A comprehensive, secure Solana wallet with Gmail OAuth authentication and full DeFi functionality",
+  "description": "A comprehensive, secure Solana wallet with mobile SMS authentication and full DeFi functionality",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
