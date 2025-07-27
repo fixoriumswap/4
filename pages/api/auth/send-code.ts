@@ -29,10 +29,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const { phoneNumber, type = 'signin' } = req.body
+    const { phoneNumber, countryCode, type = 'signin' } = req.body
 
     if (!phoneNumber) {
       return res.status(400).json({ error: 'Phone number is required' })
+    }
+
+    if (!countryCode) {
+      return res.status(400).json({ error: 'Country code is required' })
     }
 
     // Normalize phone number
