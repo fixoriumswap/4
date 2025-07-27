@@ -220,10 +220,10 @@ export function FixoriumWalletProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  // Auto-refresh balance every 10 seconds
+  // Auto-refresh balance every 30 seconds (reduced to avoid rate limiting)
   useEffect(() => {
     if (isAuthenticated && publicKey) {
-      const interval = setInterval(refreshBalance, 10000);
+      const interval = setInterval(refreshBalance, 30000);
       return () => clearInterval(interval);
     }
   }, [isAuthenticated, publicKey]);
