@@ -23,8 +23,8 @@ export default function Home() {
     setMounted(true);
   }, []);
 
-  // Mobile wallet is the only connection type
-  const connectionType = 'mobile';
+  // Gmail wallet is the only connection type
+  const connectionType = 'gmail';
 
   const tabs = [
     { id: 'dashboard', label: 'Dashboard', icon: '🏠', gradient: 'from-blue-500 to-purple-600' },
