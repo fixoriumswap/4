@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { Connection, PublicKey, VersionedTransaction } from '@solana/web3.js';
+import { useWalletContext } from './WalletContext';
+import { Connection, PublicKey, VersionedTransaction, Keypair } from '@solana/web3.js';
 import { createJupiterApiClient, QuoteResponse } from '@jup-ag/api';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
@@ -48,7 +48,7 @@ const POPULAR_TOKENS: Token[] = [
 ];
 
 export default function TokenSwap() {
-  const { publicKey, signTransaction, connected } = useWallet();
+  const { publicKey, keypair, isConnected: connected } = useWalletContext();
   const [fromToken, setFromToken] = useState<Token>(POPULAR_TOKENS[0]);
   const [toToken, setToToken] = useState<Token>(POPULAR_TOKENS[1]);
   const [amount, setAmount] = useState('');
@@ -188,7 +188,12 @@ export default function TokenSwap() {
       const swapTransactionBuf = Buffer.from(swapResult.swapTransaction, 'base64');
       const transaction = VersionedTransaction.deserialize(swapTransactionBuf);
 
-      const signedTransaction = await signTransaction(transaction);
+      if (!keypair) {
+        throw new Error('Keypair not available for signing');
+      }
+
+      transaction.sign([keypair]);
+      const signedTransaction = transaction;
 
       setSwapStatus('Submitting transaction...');
 
