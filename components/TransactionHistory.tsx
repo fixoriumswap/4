@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 import { Connection, PublicKey } from '@solana/web3.js';
 
 const RPC_URL = 'https://api.mainnet-beta.solana.com';
@@ -19,7 +19,7 @@ interface Transaction {
 }
 
 export default function TransactionHistory() {
-  const { publicKey, connected } = useWallet();
+  const { publicKey, isConnected: connected } = useWalletContext();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<'all' | 'transfer' | 'swap' | 'stake'>('all');
