@@ -394,6 +394,12 @@ export default function SignIn() {
                     {state.showCountryPicker && location && (
                       <div className="country-picker">
                         <div className="country-search">
+                          <div className="search-header">
+                            <span className="search-label">Choose your country</span>
+                            <span className="country-count">
+                              {filteredCountries.length} available
+                            </span>
+                          </div>
                           <input
                             type="text"
                             placeholder="Search countries..."
