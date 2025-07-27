@@ -1,86 +1,32 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/router'
-import { useLocation, CountryInfo } from '../../hooks/useLocation'
-import { sortCountries, filterCountries } from '../../utils/countryUtils'
 
 interface AuthState {
-  step: 'phone' | 'code'
-  phoneNumber: string
+  step: 'email' | 'code'
+  email: string
   code: string
   loading: boolean
   error: string | null
   countdown: number
   canResend: boolean
-  selectedCountry: CountryInfo | null
-  showCountryPicker: boolean
 }
 
 export default function SignIn() {
   const router = useRouter()
   const { type = 'signin' } = router.query // 'signin' or 'recovery'
-  const { location, isLoading: isLocationLoading } = useLocation()
-
+  
   const [state, setState] = useState<AuthState>({
-    step: 'phone',
-    phoneNumber: '',
+    step: 'email',
+    email: '',
     code: '',
     loading: false,
     error: null,
     countdown: 0,
-    canResend: true,
-    selectedCountry: null,
-    showCountryPicker: false
+    canResend: true
   })
-
-  const [countrySearch, setCountrySearch] = useState('')
-
-  // Utility function to show development verification code
-  const showDevelopmentCode = (code: string) => {
-    console.log(`🔑 Verification Code: ${code}`)
-
-    // Create a more visible notification
-    const notification = document.createElement('div')
-    notification.innerHTML = `
-      <div style="
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: #28a745;
-        color: white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-        z-index: 10000;
-        font-family: monospace;
-        font-size: 16px;
-        font-weight: bold;
-        max-width: 300px;
-      ">
-        🔑 DEVELOPMENT MODE<br/>
-        Your verification code is:<br/>
-        <span style="font-size: 24px; letter-spacing: 2px;">${code}</span><br/>
-        <small>Copy this code to verify</small>
-      </div>
-    `
-    document.body.appendChild(notification)
-
-    // Remove notification after 15 seconds
-    setTimeout(() => {
-      if (notification.parentNode) {
-        notification.parentNode.removeChild(notification)
-      }
-    }, 15000)
-  }
 
   const codeInputsRef = useRef<(HTMLInputElement | null)[]>([])
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
-
-  // Set initial country when location is detected
-  useEffect(() => {
-    if (location && location.countryInfo && !state.selectedCountry) {
-      setState(prev => ({ ...prev, selectedCountry: location.countryInfo }))
-    }
-  }, [location, state.selectedCountry])
 
   // Check if user is already authenticated
   useEffect(() => {
@@ -113,68 +59,75 @@ export default function SignIn() {
     }
   }, [state.countdown, state.canResend])
 
-  const formatPhoneNumber = (value: string) => {
-    const phone = value.replace(/\D/g, '')
-    if (phone.length <= 3) return phone
-    if (phone.length <= 6) return `${phone.slice(0, 3)} ${phone.slice(3)}`
-    return `${phone.slice(0, 3)} ${phone.slice(3, 6)} ${phone.slice(6, 10)}`
+  // Utility function to show development verification code
+  const showDevelopmentCode = (code: string) => {
+    console.log(`🔑 Verification Code: ${code}`)
+    
+    // Create a more visible notification
+    const notification = document.createElement('div')
+    notification.innerHTML = `
+      <div style="
+        position: fixed; 
+        top: 20px; 
+        right: 20px; 
+        background: #28a745; 
+        color: white; 
+        padding: 20px; 
+        border-radius: 10px; 
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-family: monospace;
+        font-size: 16px;
+        font-weight: bold;
+        max-width: 300px;
+      ">
+        🔑 DEVELOPMENT MODE<br/>
+        Your verification code is:<br/>
+        <span style="font-size: 24px; letter-spacing: 2px;">${code}</span><br/>
+        <small>Copy this code to verify</small>
+      </div>
+    `
+    document.body.appendChild(notification)
+    
+    // Remove notification after 15 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification)
+      }
+    }, 15000)
   }
 
-  const handleCountrySelect = (country: CountryInfo) => {
-    setState(prev => ({
-      ...prev,
-      selectedCountry: country,
-      showCountryPicker: false,
-      phoneNumber: '' // Clear phone number when country changes
-    }))
-    setCountrySearch('')
-  }
-
-  // Filter and sort countries based on search
-  const filteredCountries = location ?
-    sortCountries(filterCountries(location.availableCountries, countrySearch)) : []
-
-  const handlePhoneSubmit = async (e: React.FormEvent) => {
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!state.phoneNumber.trim()) {
-      setState(prev => ({ ...prev, error: 'Please enter your phone number' }))
+    
+    if (!state.email.trim()) {
+      setState(prev => ({ ...prev, error: 'Please enter your Gmail address' }))
       return
     }
 
-    if (!state.selectedCountry) {
-      setState(prev => ({ ...prev, error: 'Please select a country' }))
-      return
-    }
-
-    // Check for VPN
-    if (location && location.isVPN) {
-      setState(prev => ({ ...prev, error: 'Please disable your VPN to continue' }))
+    // Basic Gmail validation
+    if (!state.email.toLowerCase().endsWith('@gmail.com')) {
+      setState(prev => ({ ...prev, error: 'Please enter a valid Gmail address' }))
       return
     }
 
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
-      // Format full phone number with country code
-      const fullPhoneNumber = `${state.selectedCountry.dialCode}${state.phoneNumber}`
-
-      console.log('📱 Sending verification request:', {
-        phoneNumber: fullPhoneNumber,
-        countryCode: state.selectedCountry.code,
+      console.log('📧 Sending Gmail verification request:', {
+        email: state.email,
         type: type as string
       })
 
-      const response = await fetch('/api/auth/send-code', {
+      const response = await fetch('/api/auth/send-gmail-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phoneNumber: fullPhoneNumber,
-          countryCode: state.selectedCountry.code,
+        body: JSON.stringify({ 
+          email: state.email,
           type: type as string
         })
       })
-
+      
       console.log('📡 API Response status:', response.status)
 
       const data = await response.json()
@@ -189,9 +142,9 @@ export default function SignIn() {
         showDevelopmentCode(data.devCode)
       }
 
-      setState(prev => ({
-        ...prev,
-        step: 'code',
+      setState(prev => ({ 
+        ...prev, 
+        step: 'code', 
         loading: false,
         countdown: 60,
         canResend: false
@@ -239,29 +192,20 @@ export default function SignIn() {
 
   const handleCodeSubmit = async (codeToSubmit?: string) => {
     const finalCode = codeToSubmit || state.code
-
+    
     if (finalCode.length !== 6) {
       setState(prev => ({ ...prev, error: 'Please enter the complete 6-digit code' }))
-      return
-    }
-
-    if (!state.selectedCountry) {
-      setState(prev => ({ ...prev, error: 'Country information missing' }))
       return
     }
 
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
-      // Format full phone number with country code
-      const fullPhoneNumber = `${state.selectedCountry.dialCode}${state.phoneNumber}`
-
-      const response = await fetch('/api/auth/verify-code', {
+      const response = await fetch('/api/auth/verify-gmail-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          phoneNumber: fullPhoneNumber,
-          countryCode: state.selectedCountry.code,
+          email: state.email,
           code: finalCode,
           type: type as string
         })
@@ -289,33 +233,23 @@ export default function SignIn() {
   const handleResendCode = async () => {
     if (!state.canResend) return
 
-    if (!state.selectedCountry) {
-      setState(prev => ({ ...prev, error: 'Country information missing' }))
-      return
-    }
-
     setState(prev => ({ ...prev, loading: true, error: null }))
 
     try {
-      // Format full phone number with country code
-      const fullPhoneNumber = `${state.selectedCountry.dialCode}${state.phoneNumber}`
-
-      console.log('🔄 Resending verification request:', {
-        phoneNumber: fullPhoneNumber,
-        countryCode: state.selectedCountry.code,
+      console.log('🔄 Resending Gmail verification request:', {
+        email: state.email,
         type: type as string
       })
-
-      const response = await fetch('/api/auth/send-code', {
+      
+      const response = await fetch('/api/auth/send-gmail-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phoneNumber: fullPhoneNumber,
-          countryCode: state.selectedCountry.code,
+        body: JSON.stringify({ 
+          email: state.email,
           type: type as string
         })
       })
-
+      
       console.log('📡 Resend API Response status:', response.status)
 
       const data = await response.json()
@@ -330,8 +264,8 @@ export default function SignIn() {
         showDevelopmentCode(data.devCode)
       }
 
-      setState(prev => ({
-        ...prev,
+      setState(prev => ({ 
+        ...prev, 
         loading: false,
         countdown: 60,
         canResend: false,
@@ -353,10 +287,10 @@ export default function SignIn() {
     }
   }
 
-  const handleBackToPhone = () => {
+  const handleBackToEmail = () => {
     setState(prev => ({ 
       ...prev, 
-      step: 'phone', 
+      step: 'email', 
       code: '', 
       error: null,
       countdown: 0,
@@ -395,7 +329,7 @@ export default function SignIn() {
         </div>
 
         <div className="auth-content">
-          {state.step === 'phone' ? (
+          {state.step === 'email' ? (
             <>
               <div className="auth-description">
                 <h2>
@@ -403,105 +337,29 @@ export default function SignIn() {
                 </h2>
                 <p>
                   {type === 'recovery' 
-                    ? 'Enter your mobile number to recover your Solana wallet. We\'ll send you a verification code to restore access.'
-                    : 'Create your secure Solana wallet with just your mobile number. No seed phrases to remember, no complex setups.'
+                    ? 'Enter your Gmail address to recover your Solana wallet. We\'ll send you a verification code to restore access.'
+                    : 'Create your secure Solana wallet with just your Gmail address. We\'ll send a verification code to your email.'
                   }
                 </p>
               </div>
 
-              {/* VPN Warning */}
-              {location && location.isVPN && (
-                <div className="vpn-warning">
-                  <div className="warning-icon">⚠️</div>
-                  <div className="warning-content">
-                    <h3>VPN Detected</h3>
-                    <p>
-                      Please disable your VPN to continue. We need to verify your actual location
-                      for security and compliance purposes.
-                    </p>
-                    <button
-                      type="button"
-                      onClick={() => window.location.reload()}
-                      className="retry-button"
-                    >
-                      Check Again
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              <form onSubmit={handlePhoneSubmit} className="phone-form">
+              <form onSubmit={handleEmailSubmit} className="email-form">
                 <div className="input-group">
-                  <label htmlFor="phone">Mobile Number</label>
-
-                  {/* Location Display */}
-                  {location && !location.isVPN && (
-                    <div className="location-info">
-                      <span className="location-icon">📍</span>
-                      <span>Detected location: {location.city ? `${location.city}, ` : ''}{location.country}</span>
+                  <label htmlFor="email">Gmail Address</label>
+                  <div className="email-input-container">
+                    <div className="email-icon">
+                      <svg viewBox="0 0 24 24" className="gmail-icon">
+                        <path fill="currentColor" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.5 4.64L12 9.548l6.5-4.908 1.573-1.147C21.69 2.28 24 3.434 24 5.457z"/>
+                      </svg>
                     </div>
-                  )}
-
-                  <div className="phone-input-container">
-                    {/* Country Selector */}
-                    <div className="country-selector" onClick={() => setState(prev => ({ ...prev, showCountryPicker: !prev.showCountryPicker }))}>
-                      <span className="country-flag">
-                        {state.selectedCountry?.flag || '🇺����'}
-                      </span>
-                      <span className="country-code">
-                        {state.selectedCountry?.dialCode || '+1'}
-                      </span>
-                      <span className="dropdown-arrow">▼</span>
-                    </div>
-
-                    {/* Country Picker Dropdown */}
-                    {state.showCountryPicker && location && (
-                      <div className="country-picker">
-                        <div className="country-search">
-                          <div className="search-header">
-                            <span className="search-label">Choose your country</span>
-                            <span className="country-count">
-                              {filteredCountries.length} available
-                            </span>
-                          </div>
-                          <input
-                            type="text"
-                            placeholder="Search countries..."
-                            className="country-search-input"
-                            value={countrySearch}
-                            onChange={(e) => setCountrySearch(e.target.value)}
-                            autoFocus
-                          />
-                        </div>
-                        <div className="country-list">
-                          {filteredCountries.map((country) => (
-                            <div
-                              key={country.code}
-                              className="country-option"
-                              onClick={() => handleCountrySelect(country)}
-                            >
-                              <span className="country-flag-option">{country.flag}</span>
-                              <span className="country-name">{country.name}</span>
-                              <span className="country-dial-code">{country.dialCode}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     <input
-                      id="phone"
-                      type="tel"
-                      value={formatPhoneNumber(state.phoneNumber)}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '')
-                        if (value.length <= 15) { // Increased length for international numbers
-                          setState(prev => ({ ...prev, phoneNumber: value, error: null }))
-                        }
-                      }}
-                      placeholder="Enter your mobile number"
-                      className="phone-input"
-                      disabled={state.loading || (location && location.isVPN)}
+                      id="email"
+                      type="email"
+                      value={state.email}
+                      onChange={(e) => setState(prev => ({ ...prev, email: e.target.value, error: null }))}
+                      placeholder="your.email@gmail.com"
+                      className="email-input"
+                      disabled={state.loading}
                     />
                   </div>
                 </div>
@@ -513,34 +371,19 @@ export default function SignIn() {
                   </div>
                 )}
 
-                <button
-                  type="submit"
+                <button 
+                  type="submit" 
                   className="submit-button"
-                  disabled={
-                    state.loading ||
-                    state.phoneNumber.length < 7 ||
-                    (location && location.isVPN) ||
-                    isLocationLoading
-                  }
+                  disabled={state.loading || !state.email.includes('@gmail.com')}
                 >
-                  {isLocationLoading ? (
-                    <>
-                      <div className="spinner"></div>
-                      <span>Detecting Location...</span>
-                    </>
-                  ) : state.loading ? (
+                  {state.loading ? (
                     <>
                       <div className="spinner"></div>
                       <span>Sending Code...</span>
                     </>
-                  ) : location && location.isVPN ? (
-                    <>
-                      <span className="button-icon">🚫</span>
-                      <span>Please Disable VPN</span>
-                    </>
                   ) : (
                     <>
-                      <span className="button-icon">📱</span>
+                      <span className="button-icon">📧</span>
                       <span>{type === 'recovery' ? 'Send Recovery Code' : 'Send Verification Code'}</span>
                     </>
                   )}
@@ -552,7 +395,7 @@ export default function SignIn() {
                   <div className="feature-item">
                     <div className="feature-icon">🔒</div>
                     <h3>Secure Login</h3>
-                    <p>SMS verification for secure access</p>
+                    <p>Gmail verification for secure access</p>
                   </div>
                   <div className="feature-item">
                     <div className="feature-icon">⚡</div>
@@ -575,12 +418,10 @@ export default function SignIn() {
           ) : (
             <>
               <div className="auth-description">
-                <h2>Enter Verification Code</h2>
+                <h2>Check Your Gmail</h2>
                 <p>
-                  We've sent a 6-digit code to <strong>
-                    {state.selectedCountry?.flag} {state.selectedCountry?.dialCode} {formatPhoneNumber(state.phoneNumber)}
-                  </strong>.
-                  Enter the code below to {type === 'recovery' ? 'recover your account' : 'create your wallet'}.
+                  We've sent a 6-digit verification code to <strong>{state.email}</strong>. 
+                  Check your Gmail inbox and enter the code below to {type === 'recovery' ? 'recover your account' : 'create your wallet'}.
                 </p>
               </div>
 
@@ -649,11 +490,11 @@ export default function SignIn() {
 
                   <button
                     type="button"
-                    onClick={handleBackToPhone}
+                    onClick={handleBackToEmail}
                     className="back-button"
                     disabled={state.loading}
                   >
-                    ← Change Phone Number
+                    ← Change Email Address
                   </button>
                 </div>
               </div>
@@ -681,7 +522,7 @@ export default function SignIn() {
           </div>
           <p className="auth-disclaimer">
             By continuing, you agree to our Terms of Service and Privacy Policy.
-            Your wallet keys are generated securely from your mobile number.
+            Your wallet keys are generated securely from your Gmail address.
           </p>
         </div>
       </div>
@@ -696,62 +537,6 @@ export default function SignIn() {
           padding: 20px;
           position: relative;
           overflow: hidden;
-        }
-
-        .vpn-warning {
-          display: flex;
-          align-items: flex-start;
-          gap: 16px;
-          padding: 20px;
-          background: linear-gradient(145deg, #fef2f2 0%, #fee2e2 100%);
-          border: 2px solid #fca5a5;
-          border-radius: 16px;
-          margin-bottom: 32px;
-          animation: warningPulse 2s ease-in-out infinite;
-        }
-
-        @keyframes warningPulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.02); }
-        }
-
-        .warning-icon {
-          font-size: 24px;
-          flex-shrink: 0;
-        }
-
-        .warning-content {
-          flex: 1;
-        }
-
-        .warning-content h3 {
-          margin: 0 0 8px 0;
-          font-size: 16px;
-          font-weight: 700;
-          color: #dc2626;
-        }
-
-        .warning-content p {
-          margin: 0 0 16px 0;
-          font-size: 14px;
-          color: #991b1b;
-          line-height: 1.5;
-        }
-
-        .retry-button {
-          padding: 8px 16px;
-          background: #dc2626;
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 600;
-          cursor: pointer;
-          transition: background 0.3s ease;
-        }
-
-        .retry-button:hover {
-          background: #b91c1c;
         }
 
         .auth-container::before {
@@ -853,7 +638,7 @@ export default function SignIn() {
           line-height: 1.6;
         }
 
-        .phone-form, .code-form {
+        .email-form, .code-form {
           margin-bottom: 32px;
         }
 
@@ -869,195 +654,34 @@ export default function SignIn() {
           font-size: 14px;
         }
 
-        .location-info {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          margin-bottom: 8px;
-          font-size: 12px;
-          color: #6b7280;
-        }
-
-        .location-icon {
-          font-size: 14px;
-        }
-
-        .phone-input-container {
+        .email-input-container {
           display: flex;
           border: 2px solid #e5e7eb;
           border-radius: 12px;
-          overflow: visible;
-          transition: border-color 0.3s ease;
-          position: relative;
-        }
-
-        .phone-input-container:focus-within {
-          border-color: #667eea;
-        }
-
-        .country-selector {
-          background: #f9fafb;
-          padding: 16px 12px;
-          border-right: 1px solid #e5e7eb;
-          font-weight: 600;
-          color: #374151;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          cursor: pointer;
-          transition: background 0.3s ease;
-          min-width: 80px;
-        }
-
-        .country-selector:hover {
-          background: #f3f4f6;
-        }
-
-        .country-flag {
-          font-size: 18px;
-        }
-
-        .country-code {
-          font-size: 14px;
-        }
-
-        .dropdown-arrow {
-          font-size: 10px;
-          color: #9ca3af;
-          transition: transform 0.3s ease;
-        }
-
-        .country-picker-overlay {
-          position: fixed;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background: rgba(0, 0, 0, 0.3);
-          z-index: 999;
-        }
-
-        .country-picker {
-          position: absolute;
-          top: 100%;
-          left: 0;
-          right: 0;
-          background: white;
-          border: 2px solid #e5e7eb;
-          border-radius: 12px;
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
-          z-index: 1000;
-          max-height: 300px;
           overflow: hidden;
-          margin-top: 4px;
+          transition: border-color 0.3s ease;
         }
 
-        .country-picker-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          padding: 12px 16px;
-          border-bottom: 1px solid #e5e7eb;
-          background: #f9fafb;
-        }
-
-        .country-picker-header h3 {
-          margin: 0;
-          font-size: 14px;
-          font-weight: 600;
-          color: #374151;
-        }
-
-        .close-picker-btn {
-          background: none;
-          border: none;
-          font-size: 16px;
-          color: #6b7280;
-          cursor: pointer;
-          padding: 4px;
-          border-radius: 4px;
-          transition: background 0.2s ease;
-        }
-
-        .close-picker-btn:hover {
-          background: #e5e7eb;
-        }
-
-        .country-search {
-          padding: 12px;
-          border-bottom: 1px solid #e5e7eb;
-        }
-
-        .search-header {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          margin-bottom: 8px;
-        }
-
-        .search-label {
-          font-size: 14px;
-          font-weight: 600;
-          color: #374151;
-        }
-
-        .country-count {
-          font-size: 12px;
-          color: #6b7280;
-          background: #f3f4f6;
-          padding: 2px 8px;
-          border-radius: 12px;
-        }
-
-        .country-search-input {
-          width: 100%;
-          padding: 8px 12px;
-          border: 1px solid #d1d5db;
-          border-radius: 8px;
-          font-size: 14px;
-          outline: none;
-        }
-
-        .country-search-input:focus {
+        .email-input-container:focus-within {
           border-color: #667eea;
         }
 
-        .country-list {
-          max-height: 200px;
-          overflow-y: auto;
-        }
-
-        .country-option {
+        .email-icon {
+          background: #f9fafb;
+          padding: 16px;
+          border-right: 1px solid #e5e7eb;
           display: flex;
           align-items: center;
-          gap: 12px;
-          padding: 12px;
-          cursor: pointer;
-          transition: background 0.2s ease;
+          justify-content: center;
         }
 
-        .country-option:hover {
-          background: #f9fafb;
+        .gmail-icon {
+          width: 20px;
+          height: 20px;
+          color: #ea4335;
         }
 
-        .country-flag-option {
-          font-size: 18px;
-          width: 24px;
-        }
-
-        .country-name {
-          flex: 1;
-          font-size: 14px;
-          color: #374151;
-        }
-
-        .country-dial-code {
-          font-size: 14px;
-          color: #6b7280;
-          font-weight: 600;
-        }
-
-        .phone-input {
+        .email-input {
           flex: 1;
           padding: 16px;
           border: none;
@@ -1066,7 +690,7 @@ export default function SignIn() {
           outline: none;
         }
 
-        .phone-input::placeholder {
+        .email-input::placeholder {
           color: #9ca3af;
         }
 
@@ -1306,51 +930,6 @@ export default function SignIn() {
             width: 40px;
             height: 48px;
             font-size: 18px;
-          }
-
-          .vpn-warning {
-            flex-direction: column;
-            text-align: center;
-            padding: 16px;
-          }
-
-          .warning-content h3 {
-            font-size: 14px;
-          }
-
-          .warning-content p {
-            font-size: 12px;
-          }
-
-          .country-selector {
-            padding: 12px 8px;
-            min-width: 70px;
-          }
-
-          .country-flag {
-            font-size: 16px;
-          }
-
-          .country-code {
-            font-size: 12px;
-          }
-
-          .country-picker {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 90vw;
-            max-width: 400px;
-            max-height: 60vh;
-          }
-
-          .country-option {
-            padding: 16px 12px;
-          }
-
-          .location-info {
-            font-size: 11px;
           }
         }
       `}</style>
