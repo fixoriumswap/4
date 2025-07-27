@@ -15,7 +15,6 @@ export default function CryptoLoader({ onComplete, duration = 5000 }: CryptoLoad
       setTimeLeft((prev) => {
         if (prev <= 1) {
           clearInterval(interval);
-          onComplete();
           return 0;
         }
         return prev - 1;
@@ -24,6 +23,18 @@ export default function CryptoLoader({ onComplete, duration = 5000 }: CryptoLoad
 
     return () => clearInterval(interval);
   }, [onComplete, duration]);
+
+  // Separate useEffect to handle completion callback
+  useEffect(() => {
+    if (timeLeft === 0 && onComplete) {
+      // Use setTimeout to ensure this runs after render
+      const timeout = setTimeout(() => {
+        onComplete();
+      }, 0);
+
+      return () => clearTimeout(timeout);
+    }
+  }, [timeLeft, onComplete]);
   const cryptoCoins = [
     { name: 'SOL', logo: 'https://cryptologos.cc/logos/solana-sol-logo.png', color: '#9945FF' },
     { name: 'BONK', logo: 'https://arweave.net/hQiPZOsRZXGXBJd_82PhVdlM_hACsT_q6wqwf5cSY7I', color: '#FF6B35' },
