@@ -202,7 +202,7 @@ export default function SignIn() {
 
   const handleCodeSubmit = async (codeToSubmit?: string) => {
     const finalCode = codeToSubmit || state.code
-    
+
     if (finalCode.length !== 6) {
       setState(prev => ({ ...prev, error: 'Please enter the complete 6-digit code' }))
       return
@@ -218,24 +218,33 @@ export default function SignIn() {
           email: state.email,
           code: finalCode,
           type: type as string
-        })
+        }),
+        signal: AbortSignal.timeout(15000) // 15 second timeout
       })
 
-      const data = await response.json()
-
       if (!response.ok) {
-        setState(prev => ({ ...prev, error: data.error, loading: false }))
+        const errorData = await response.json().catch(() => ({ error: 'Verification failed' }))
+        setState(prev => ({ ...prev, error: errorData.error || 'Verification failed', loading: false }))
         return
       }
+
+      const data = await response.json()
 
       // Success! Redirect to main app
       router.push('/')
 
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: 'Network error. Please try again.', 
-        loading: false 
+      console.error('Code verification error:', error)
+      const errorMessage = error instanceof Error
+        ? error.name === 'AbortError'
+          ? 'Verification timed out. Please try again.'
+          : 'Network error. Please check your connection and try again.'
+        : 'Network error. Please try again.'
+
+      setState(prev => ({
+        ...prev,
+        error: errorMessage,
+        loading: false
       }))
     }
   }
