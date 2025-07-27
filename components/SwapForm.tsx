@@ -515,8 +515,16 @@ function SwapFormContent() {
               <span>{quote.priceImpactPct ? `${(parseFloat(quote.priceImpactPct) * 100).toFixed(2)}%` : 'N/A'}</span>
             </div>
             <div className="quote-row small">
-              <span>Platform fees:</span>
-              <span>{quote.platformFee ? `${quote.platformFee.amount} ${quote.platformFee.mint}` : 'None'}</span>
+              <span>Platform fee:</span>
+              <span className="platform-fee">{PLATFORM_FEE_AMOUNT} SOL</span>
+            </div>
+            <div className="quote-row small">
+              <span>Network fee:</span>
+              <span>~0.001 SOL</span>
+            </div>
+            <div className="quote-row total-cost">
+              <span><b>Total cost:</b></span>
+              <span><b>{(parseFloat(amount) + PLATFORM_FEE_AMOUNT + 0.001).toFixed(6)} SOL</b></span>
             </div>
           </div>
         ) : amount && fromToken.address !== toToken.address ? (
