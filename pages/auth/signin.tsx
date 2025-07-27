@@ -17,7 +17,8 @@ interface AuthState {
 export default function SignIn() {
   const router = useRouter()
   const { type = 'signin' } = router.query // 'signin' or 'recovery'
-  
+  const { location, isLoading: isLocationLoading } = useLocation()
+
   const [state, setState] = useState<AuthState>({
     step: 'phone',
     phoneNumber: '',
@@ -25,7 +26,9 @@ export default function SignIn() {
     loading: false,
     error: null,
     countdown: 0,
-    canResend: true
+    canResend: true,
+    selectedCountry: null,
+    showCountryPicker: false
   })
 
   const codeInputsRef = useRef<(HTMLInputElement | null)[]>([])
