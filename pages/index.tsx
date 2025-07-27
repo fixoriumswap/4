@@ -68,7 +68,7 @@ export default function Home() {
   return (
     <div className="app-container" suppressHydrationWarning>
       <ModernNavbar
-        onConnectWallet={signInWithGmail}
+        onConnectWallet={signInWithMobile}
         isConnected={isConnected}
         connectionType={connectionType}
         publicKey={publicKey}
