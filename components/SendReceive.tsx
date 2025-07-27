@@ -65,8 +65,13 @@ export default function SendReceive({ onClose }: SendReceiveProps) {
         return;
       }
 
-      if (lamports > balance * LAMPORTS_PER_SOL) {
-        setStatus('❌ Insufficient balance');
+      // Calculate total amount needed (send amount + platform fee + transaction fees)
+      const platformFeeLamports = Math.floor(PLATFORM_FEE_AMOUNT * LAMPORTS_PER_SOL);
+      const transactionFeeLamports = 10000; // ~0.00001 SOL estimated transaction fee
+      const totalRequired = lamports + platformFeeLamports + transactionFeeLamports;
+
+      if (totalRequired > balance * LAMPORTS_PER_SOL) {
+        setStatus(`❌ Insufficient balance. Need ${(totalRequired / LAMPORTS_PER_SOL).toFixed(6)} SOL (including platform fee)`);
         setLoading(false);
         return;
       }
