@@ -489,7 +489,7 @@ export default function SignIn() {
 
                 {state.error && (
                   <div className="error-message">
-                    <span className="error-icon">⚠��</span>
+                    <span className="error-icon">⚠️</span>
                     {state.error}
                   </div>
                 )}
@@ -580,6 +580,62 @@ export default function SignIn() {
           padding: 20px;
           position: relative;
           overflow: hidden;
+        }
+
+        .vpn-warning {
+          display: flex;
+          align-items: flex-start;
+          gap: 16px;
+          padding: 20px;
+          background: linear-gradient(145deg, #fef2f2 0%, #fee2e2 100%);
+          border: 2px solid #fca5a5;
+          border-radius: 16px;
+          margin-bottom: 32px;
+          animation: warningPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes warningPulse {
+          0%, 100% { transform: scale(1); }
+          50% { transform: scale(1.02); }
+        }
+
+        .warning-icon {
+          font-size: 24px;
+          flex-shrink: 0;
+        }
+
+        .warning-content {
+          flex: 1;
+        }
+
+        .warning-content h3 {
+          margin: 0 0 8px 0;
+          font-size: 16px;
+          font-weight: 700;
+          color: #dc2626;
+        }
+
+        .warning-content p {
+          margin: 0 0 16px 0;
+          font-size: 14px;
+          color: #991b1b;
+          line-height: 1.5;
+        }
+
+        .retry-button {
+          padding: 8px 16px;
+          background: #dc2626;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: background 0.3s ease;
+        }
+
+        .retry-button:hover {
+          background: #b91c1c;
         }
 
         .auth-container::before {
