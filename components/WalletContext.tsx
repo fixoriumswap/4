@@ -21,7 +21,7 @@ interface WalletContextType {
   
   // Connection status
   isConnected: boolean;
-  connectionType: 'gmail' | 'extension' | null;
+  connectionType: 'gmail' | null;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
