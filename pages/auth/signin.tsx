@@ -121,6 +121,12 @@ export default function SignIn() {
       // Format full phone number with country code
       const fullPhoneNumber = `${state.selectedCountry.dialCode}${state.phoneNumber}`
 
+      console.log('📱 Sending verification request:', {
+        phoneNumber: fullPhoneNumber,
+        countryCode: state.selectedCountry.code,
+        type: type as string
+      })
+
       const response = await fetch('/api/auth/send-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -130,6 +136,8 @@ export default function SignIn() {
           type: type as string
         })
       })
+
+      console.log('📡 API Response status:', response.status)
 
       const data = await response.json()
 
