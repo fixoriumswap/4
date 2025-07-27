@@ -259,32 +259,34 @@ export default function SignIn() {
         email: state.email,
         type: type as string
       })
-      
+
       const response = await fetch('/api/auth/send-gmail-code', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: state.email,
           type: type as string
-        })
+        }),
+        signal: AbortSignal.timeout(15000) // 15 second timeout
       })
-      
+
       console.log('📡 Resend API Response status:', response.status)
 
-      const data = await response.json()
-
       if (!response.ok) {
-        setState(prev => ({ ...prev, error: data.error, loading: false }))
+        const errorData = await response.json().catch(() => ({ error: 'Failed to resend code' }))
+        setState(prev => ({ ...prev, error: errorData.error || 'Failed to resend code', loading: false }))
         return
       }
+
+      const data = await response.json()
 
       // Show development verification code if available
       if (data.devCode) {
         showDevelopmentCode(data.devCode)
       }
 
-      setState(prev => ({ 
-        ...prev, 
+      setState(prev => ({
+        ...prev,
         loading: false,
         countdown: 60,
         canResend: false,
@@ -298,10 +300,17 @@ export default function SignIn() {
       codeInputsRef.current[0]?.focus()
 
     } catch (error) {
-      setState(prev => ({ 
-        ...prev, 
-        error: 'Network error. Please try again.', 
-        loading: false 
+      console.error('Resend code error:', error)
+      const errorMessage = error instanceof Error
+        ? error.name === 'AbortError'
+          ? 'Request timed out. Please try again.'
+          : 'Network error. Please check your connection and try again.'
+        : 'Network error. Please try again.'
+
+      setState(prev => ({
+        ...prev,
+        error: errorMessage,
+        loading: false
       }))
     }
   }
