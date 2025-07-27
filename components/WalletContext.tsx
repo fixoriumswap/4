@@ -127,6 +127,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     return () => {
       isMounted = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - only run on mount
 
   // Generate wallet from mobile session
