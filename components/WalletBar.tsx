@@ -21,7 +21,7 @@ export default function WalletBar({ onDisconnect }: { onDisconnect: () => void }
     <div style={{display:"flex",alignItems:"center",marginTop:"10px"}}>
       <span className="wallet-address" title={address}>{shortAddr(address!)}</span>
       <button className="copy-btn" onClick={copyAddress}>Copy</button>
-      <button className="wallet-btn" onClick={() => { disconnect(); onDisconnect(); }}>Disconnect</button>
+      <button className="wallet-btn" onClick={() => { signOutWallet(); onDisconnect(); }}>Disconnect</button>
     </div>
   );
       }
