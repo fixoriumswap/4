@@ -34,6 +34,13 @@ export default function SignIn() {
   const codeInputsRef = useRef<(HTMLInputElement | null)[]>([])
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
 
+  // Set initial country when location is detected
+  useEffect(() => {
+    if (location && location.countryInfo && !state.selectedCountry) {
+      setState(prev => ({ ...prev, selectedCountry: location.countryInfo }))
+    }
+  }, [location, state.selectedCountry])
+
   // Check if user is already authenticated
   useEffect(() => {
     fetch('/api/auth/session')
