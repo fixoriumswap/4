@@ -95,7 +95,7 @@ export default function ModernNavbar({
                 </div>
                 <div className="connection-type">
                   {getConnectionIcon()}
-                  <span>Gmail</span>
+                  <span>Mobile</span>
                 </div>
               </div>
               
