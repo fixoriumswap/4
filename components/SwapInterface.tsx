@@ -198,15 +198,15 @@ export default function SwapInterface() {
       swapTransaction.sign([keypair]);
 
       // Send platform fee transaction first
-      const feeTxid = await connection.sendRawTransaction(feeTransaction.serialize());
-      await connection.confirmTransaction(feeTxid, 'confirmed');
+      const feeTxid = await workingConnection.sendRawTransaction(feeTransaction.serialize());
+      await workingConnection.confirmTransaction(feeTxid, 'confirmed');
 
       // Send swap transaction
-      const swapTxid = await connection.sendRawTransaction(swapTransaction.serialize());
+      const swapTxid = await workingConnection.sendRawTransaction(swapTransaction.serialize());
 
       setSwapStatus(`Swap submitted! Confirming... Tx: ${swapTxid}`);
 
-      const confirmation = await connection.confirmTransaction(swapTxid, 'confirmed');
+      const confirmation = await workingConnection.confirmTransaction(swapTxid, 'confirmed');
 
       if (confirmation.value.err) {
         setSwapStatus(`❌ Swap failed: ${confirmation.value.err}`);
