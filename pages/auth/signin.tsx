@@ -88,7 +88,14 @@ export default function SignIn() {
       showCountryPicker: false,
       phoneNumber: '' // Clear phone number when country changes
     }))
+    setCountrySearch('')
   }
+
+  // Filter countries based on search
+  const filteredCountries = location?.availableCountries.filter(country =>
+    country.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
+    country.dialCode.includes(countrySearch)
+  ) || []
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
