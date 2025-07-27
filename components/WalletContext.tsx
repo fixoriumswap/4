@@ -132,34 +132,65 @@ export function WalletProvider({ children }: WalletProviderProps) {
   // Generate wallet from mobile session
   useEffect(() => {
     if (user?.phoneNumber && user?.walletSeed) {
-      try {
-        setIsWalletLoading(true);
-        
-        const walletInfo = MobileWalletService.generateWalletFromMobile(
-          user.phoneNumber,
-          user.walletSeed
-        );
-        
-        const keyPair = Keypair.fromSecretKey(walletInfo.privateKey);
-        const pubKey = keyPair.publicKey;
-        
-        setKeypair(keyPair);
-        setPublicKey(pubKey);
-        setConnectionType('mobile');
-        
-        // Refresh balance after wallet is set
-        refreshBalance();
-        
-      } catch (error) {
-        console.error('Error generating wallet from mobile:', error);
-      } finally {
-        setIsWalletLoading(false);
-      }
+      let isMounted = true;
+
+      const generateWallet = async () => {
+        try {
+          if (!isMounted) return;
+
+          setIsWalletLoading(true);
+
+          // Validate user data
+          if (!MobileWalletService.validatePhoneNumber(user.phoneNumber) ||
+              !MobileWalletService.validateWalletSeed(user.walletSeed)) {
+            throw new Error('Invalid user data for wallet generation');
+          }
+
+          const walletInfo = MobileWalletService.generateWalletFromMobile(
+            user.phoneNumber,
+            user.walletSeed
+          );
+
+          if (!isMounted) return;
+
+          const keyPair = Keypair.fromSecretKey(walletInfo.privateKey);
+          const pubKey = keyPair.publicKey;
+
+          setKeypair(keyPair);
+          setPublicKey(pubKey);
+          setConnectionType('mobile');
+
+          // Refresh balance after wallet is set
+          if (isMounted) {
+            refreshBalance();
+          }
+
+        } catch (error) {
+          console.error('Error generating wallet from mobile:', error);
+          if (isMounted) {
+            // Clear wallet state on error
+            setKeypair(null);
+            setPublicKey(null);
+            setConnectionType(null);
+          }
+        } finally {
+          if (isMounted) {
+            setIsWalletLoading(false);
+          }
+        }
+      };
+
+      generateWallet();
+
+      return () => {
+        isMounted = false;
+      };
     } else {
       setKeypair(null);
       setPublicKey(null);
       setBalance(0);
       setConnectionType(null);
+      setIsWalletLoading(false);
     }
   }, [user]);
 
