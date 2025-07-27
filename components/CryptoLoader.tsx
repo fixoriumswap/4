@@ -1,6 +1,29 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
-export default function CryptoLoader() {
+interface CryptoLoaderProps {
+  onComplete?: () => void;
+  duration?: number;
+}
+
+export default function CryptoLoader({ onComplete, duration = 5000 }: CryptoLoaderProps) {
+  const [timeLeft, setTimeLeft] = useState(duration / 1000);
+
+  useEffect(() => {
+    if (!onComplete) return;
+
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          onComplete();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [onComplete, duration]);
   const cryptoCoins = [
     { name: 'SOL', logo: 'https://cryptologos.cc/logos/solana-sol-logo.png', color: '#9945FF' },
     { name: 'BONK', logo: 'https://arweave.net/hQiPZOsRZXGXBJd_82PhVdlM_hACsT_q6wqwf5cSY7I', color: '#FF6B35' },
