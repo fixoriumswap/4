@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    const sessionToken = req.cookies['mobile-wallet-session']
+    const sessionToken = req.cookies['gmail-wallet-session']
     
     if (!sessionToken) {
       return res.status(401).json({ error: 'No session found' })
@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       
       res.status(200).json({
         user: {
-          phoneNumber: decoded.phoneNumber,
+          email: decoded.email,
           walletSeed: decoded.walletSeed
         },
         isValid: true
@@ -28,8 +28,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     } catch (tokenError) {
       // Invalid or expired token
       res.setHeader('Set-Cookie', [
-        'mobile-wallet-session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0',
-        'mobile-wallet-phone=; Secure; SameSite=Strict; Path=/; Max-Age=0'
+        'gmail-wallet-session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0',
+        'gmail-wallet-email=; Secure; SameSite=Strict; Path=/; Max-Age=0'
       ])
       
       return res.status(401).json({ error: 'Invalid or expired session' })
