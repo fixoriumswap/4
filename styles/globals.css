@@ -2791,6 +2791,15 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   background: #22bca7;
 }
 
+.recovery-btn {
+  background: #4caf50;
+  color: #fff;
+}
+
+.recovery-btn:hover {
+  background: #45a049;
+}
+
 .danger-btn {
   background: #f44336;
   color: #fff;
