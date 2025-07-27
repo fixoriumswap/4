@@ -32,7 +32,7 @@ export default function ModernNavbar({
   };
 
   const handleDisconnect = async () => {
-    signOut({ callbackUrl: '/auth/signin' });
+    await signOutWallet();
     setShowDropdown(false);
   };
 
