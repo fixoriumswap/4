@@ -11,10 +11,7 @@ import {
   LedgerWalletAdapter,
   MathWalletAdapter,
   Coin98WalletAdapter,
-  SlopeWalletAdapter,
-  BackpackWalletAdapter,
-  GlowWalletAdapter,
-  BraveWalletAdapter
+  SlopeWalletAdapter
 } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
@@ -37,9 +34,6 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
       // Most popular wallets first
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter({ network }),
-      new BackpackWalletAdapter(),
-      new GlowWalletAdapter(),
-      new BraveWalletAdapter(),
       
       // Additional wallet support
       new TorusWalletAdapter(),
@@ -69,7 +63,7 @@ export default function App({ Component, pageProps: { session, ...pageProps } }:
           }}
         >
           <WalletModalProvider
-            featuredWallets={6} // Show top 6 wallets prominently
+            featuredWallets={4} // Show top 4 wallets prominently
           >
             <CustomWalletProvider>
               <Component {...pageProps} />
