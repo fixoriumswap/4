@@ -42,44 +42,35 @@ export default function WalletSetup() {
         </div>
 
         <div className="setup-options">
-          <div className="option-card">
-            <div className="option-icon create-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="12" cy="12" r="10"/>
-                <line x1="12" y1="8" x2="12" y2="16"/>
-                <line x1="8" y1="12" x2="16" y2="12"/>
-              </svg>
-            </div>
-            <h2>Create New Wallet</h2>
-            <p>Set up a new Fixorium wallet with your Gmail account. One Gmail = One permanent wallet address.</p>
-            <button 
-              className="setup-button create-button"
-              onClick={handleCreateWallet}
-              disabled={isCreating || loading}
-            >
-              {isCreating ? 'Creating...' : 'Create Wallet'}
-            </button>
-          </div>
+          <div className="single-option-card">
+            <h2>Access Your Wallet</h2>
+            <p>Use your Gmail account to create a new wallet or recover an existing one. One Gmail = One permanent wallet address.</p>
 
-          <div className="option-divider">
-            <span>OR</span>
-          </div>
+            <div className="action-buttons">
+              <button
+                className="setup-button create-button"
+                onClick={handleCreateWallet}
+                disabled={isCreating || loading}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="8" x2="12" y2="16"/>
+                  <line x1="8" y1="12" x2="16" y2="12"/>
+                </svg>
+                {isCreating ? 'Processing...' : 'Create New Wallet'}
+              </button>
 
-          <div className="option-card">
-            <div className="option-icon recover-icon">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
-              </svg>
+              <button
+                className="setup-button recover-button"
+                onClick={handleRecoverWallet}
+                disabled={isCreating || loading}
+              >
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+                </svg>
+                {isCreating ? 'Processing...' : 'Recover Wallet'}
+              </button>
             </div>
-            <h2>Recover Your Wallet</h2>
-            <p>Access your existing Fixorium wallet using the same Gmail account you used before.</p>
-            <button 
-              className="setup-button recover-button"
-              onClick={handleRecoverWallet}
-              disabled={isCreating || loading}
-            >
-              {isCreating ? 'Recovering...' : 'Recover Wallet'}
-            </button>
           </div>
         </div>
 
