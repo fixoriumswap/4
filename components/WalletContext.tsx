@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Keypair, Connection, PublicKey } from '@solana/web3.js';
-import { MobileWalletService } from '../utils/mobileWalletService';
+import { GmailWalletService } from '../utils/gmailWalletService';
 import { useRouter } from 'next/router';
 
-interface MobileUser {
-  phoneNumber: string;
+interface GmailUser {
+  email: string;
   walletSeed: string;
 }
 
 interface WalletContextType {
-  // Mobile Auth
-  user: MobileUser | null;
+  // Gmail Auth
+  user: GmailUser | null;
   isLoading: boolean;
   
   // Wallet Info
@@ -20,14 +20,14 @@ interface WalletContextType {
   isWalletLoading: boolean;
   
   // Methods
-  signInWithMobile: () => void;
+  signInWithGmail: () => void;
   signOutWallet: () => void;
   refreshBalance: () => Promise<void>;
   checkSession: () => Promise<void>;
   
   // Connection status
   isConnected: boolean;
-  connectionType: 'mobile' | null;
+  connectionType: 'gmail' | null;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -38,14 +38,14 @@ interface WalletProviderProps {
 
 export function WalletProvider({ children }: WalletProviderProps) {
   const router = useRouter();
-  const [user, setUser] = useState<MobileUser | null>(null);
+  const [user, setUser] = useState<GmailUser | null>(null);
   const [keypair, setKeypair] = useState<Keypair | null>(null);
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [isWalletLoading, setIsWalletLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [connectionType, setConnectionType] = useState<'mobile' | null>(null);
-
+  const [connectionType, setConnectionType] = useState<'gmail' | null>(null);
+  
   // Flag to prevent concurrent session checks
   const [isCheckingSession, setIsCheckingSession] = useState(false);
 
@@ -69,7 +69,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     try {
       setIsCheckingSession(true);
       setIsLoading(true);
-
+      
       const response = await fetch('/api/auth/session', {
         method: 'GET',
         credentials: 'include',
@@ -85,7 +85,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       // Clone response to avoid "body stream already read" error
       const responseClone = response.clone();
       let data;
-
+      
       try {
         data = await responseClone.json();
       } catch (jsonError) {
@@ -96,7 +96,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
       if (data && data.isValid && data.user) {
         setUser({
-          phoneNumber: data.user.phoneNumber,
+          email: data.user.email,
           walletSeed: data.user.walletSeed
         });
       } else {
@@ -114,15 +114,15 @@ export function WalletProvider({ children }: WalletProviderProps) {
   // Check session on mount
   useEffect(() => {
     let isMounted = true;
-
+    
     const initializeSession = async () => {
       if (isMounted && !isCheckingSession) {
         await checkSession();
       }
     };
-
+    
     initializeSession();
-
+    
     // Cleanup function
     return () => {
       isMounted = false;
@@ -130,44 +130,44 @@ export function WalletProvider({ children }: WalletProviderProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []); // Empty dependency array - only run on mount
 
-  // Generate wallet from mobile session
+  // Generate wallet from Gmail session
   useEffect(() => {
-    if (user?.phoneNumber && user?.walletSeed) {
+    if (user?.email && user?.walletSeed) {
       let isMounted = true;
-
+      
       const generateWallet = async () => {
         try {
           if (!isMounted) return;
-
+          
           setIsWalletLoading(true);
-
+          
           // Validate user data
-          if (!MobileWalletService.validatePhoneNumber(user.phoneNumber) ||
-              !MobileWalletService.validateWalletSeed(user.walletSeed)) {
+          if (!GmailWalletService.validateGmailAddress(user.email) || 
+              !GmailWalletService.validateWalletSeed(user.walletSeed)) {
             throw new Error('Invalid user data for wallet generation');
           }
-
-          const walletInfo = MobileWalletService.generateWalletFromMobile(
-            user.phoneNumber,
+          
+          const walletInfo = GmailWalletService.generateWalletFromGmail(
+            user.email,
             user.walletSeed
           );
-
+          
           if (!isMounted) return;
-
+          
           const keyPair = Keypair.fromSecretKey(walletInfo.privateKey);
           const pubKey = keyPair.publicKey;
-
+          
           setKeypair(keyPair);
           setPublicKey(pubKey);
-          setConnectionType('mobile');
-
+          setConnectionType('gmail');
+          
           // Refresh balance after wallet is set
           if (isMounted) {
             refreshBalance();
           }
-
+          
         } catch (error) {
-          console.error('Error generating wallet from mobile:', error);
+          console.error('Error generating wallet from Gmail:', error);
           if (isMounted) {
             // Clear wallet state on error
             setKeypair(null);
@@ -180,9 +180,9 @@ export function WalletProvider({ children }: WalletProviderProps) {
           }
         }
       };
-
+      
       generateWallet();
-
+      
       return () => {
         isMounted = false;
       };
@@ -197,7 +197,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   const refreshBalance = async () => {
     if (!publicKey) return;
-
+    
     try {
       const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
       const balance = await connection.getBalance(publicKey, 'confirmed');
@@ -208,7 +208,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     }
   };
 
-  const signInWithMobile = () => {
+  const signInWithGmail = () => {
     router.push('/auth/signin');
   };
 
@@ -220,11 +220,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     }
     
     // Clear local state
-    setUser(null);
-    setKeypair(null);
-    setPublicKey(null);
-    setBalance(0);
-    setConnectionType(null);
+    clearWalletState();
     
     // Redirect to signin
     router.push('/auth/signin');
@@ -237,7 +233,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
     keypair,
     balance,
     isWalletLoading,
-    signInWithMobile,
+    signInWithGmail,
     signOutWallet,
     refreshBalance,
     checkSession,
