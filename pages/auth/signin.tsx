@@ -304,24 +304,90 @@ export default function SignIn() {
                 </p>
               </div>
 
+              {/* VPN Warning */}
+              {location && location.isVPN && (
+                <div className="vpn-warning">
+                  <div className="warning-icon">⚠️</div>
+                  <div className="warning-content">
+                    <h3>VPN Detected</h3>
+                    <p>
+                      Please disable your VPN to continue. We need to verify your actual location
+                      for security and compliance purposes.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => window.location.reload()}
+                      className="retry-button"
+                    >
+                      Check Again
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <form onSubmit={handlePhoneSubmit} className="phone-form">
                 <div className="input-group">
                   <label htmlFor="phone">Mobile Number</label>
+
+                  {/* Location Display */}
+                  {location && !location.isVPN && (
+                    <div className="location-info">
+                      <span className="location-icon">📍</span>
+                      <span>Detected location: {location.city ? `${location.city}, ` : ''}{location.country}</span>
+                    </div>
+                  )}
+
                   <div className="phone-input-container">
-                    <span className="country-code">+1</span>
+                    {/* Country Selector */}
+                    <div className="country-selector" onClick={() => setState(prev => ({ ...prev, showCountryPicker: !prev.showCountryPicker }))}>
+                      <span className="country-flag">
+                        {state.selectedCountry?.flag || '🇺🇸'}
+                      </span>
+                      <span className="country-code">
+                        {state.selectedCountry?.dialCode || '+1'}
+                      </span>
+                      <span className="dropdown-arrow">▼</span>
+                    </div>
+
+                    {/* Country Picker Dropdown */}
+                    {state.showCountryPicker && location && (
+                      <div className="country-picker">
+                        <div className="country-search">
+                          <input
+                            type="text"
+                            placeholder="Search countries..."
+                            className="country-search-input"
+                          />
+                        </div>
+                        <div className="country-list">
+                          {location.availableCountries.map((country) => (
+                            <div
+                              key={country.code}
+                              className="country-option"
+                              onClick={() => handleCountrySelect(country)}
+                            >
+                              <span className="country-flag-option">{country.flag}</span>
+                              <span className="country-name">{country.name}</span>
+                              <span className="country-dial-code">{country.dialCode}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <input
                       id="phone"
                       type="tel"
                       value={formatPhoneNumber(state.phoneNumber)}
                       onChange={(e) => {
                         const value = e.target.value.replace(/\D/g, '')
-                        if (value.length <= 10) {
+                        if (value.length <= 15) { // Increased length for international numbers
                           setState(prev => ({ ...prev, phoneNumber: value, error: null }))
                         }
                       }}
                       placeholder="Enter your mobile number"
                       className="phone-input"
-                      disabled={state.loading}
+                      disabled={state.loading || (location && location.isVPN)}
                     />
                   </div>
                 </div>
