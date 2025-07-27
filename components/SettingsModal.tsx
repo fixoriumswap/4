@@ -111,13 +111,33 @@ export default function SettingsModal({ onClose }: SettingsModalProps) {
           </div>
 
           <div className="settings-section">
+            <h3>Account Recovery</h3>
+            <div className="recovery-info">
+              <h4>🔐 Wallet Recovery Instructions</h4>
+              <p>Your Fixorium wallet can be recovered at any time using your Gmail account:</p>
+              <ol>
+                <li>Visit Fixorium Wallet website</li>
+                <li>Click "Sign in with Gmail"</li>
+                <li>Use the same Gmail account you used to create this wallet</li>
+                <li>Your wallet will be automatically recovered with the same address</li>
+              </ol>
+              <div className="recovery-warning">
+                <p><strong>⚠️ Important:</strong> Keep your Gmail account secure with 2FA enabled. Anyone with access to your Gmail can access your wallet.</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="settings-section">
             <h3>Account Actions</h3>
             <div className="action-buttons">
               <button className="settings-action-btn refresh-btn" onClick={() => window.location.reload()}>
                 🔄 Refresh App
               </button>
+              <button className="settings-action-btn recovery-btn" onClick={showBackupInfo}>
+                🔑 Recovery Info
+              </button>
               <button className="settings-action-btn danger-btn" onClick={handleSignOut}>
-                🚪 Sign Out
+                🚪 Logout
               </button>
             </div>
           </div>
