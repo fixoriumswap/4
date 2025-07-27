@@ -28,7 +28,35 @@ interface FixoriumWalletContextType {
 
 const FixoriumWalletContext = createContext<FixoriumWalletContextType | undefined>(undefined);
 
-const connection = new Connection('https://api.mainnet-beta.solana.com');
+// Multiple RPC endpoints for fallback
+const RPC_ENDPOINTS = [
+  'https://solana-mainnet.g.alchemy.com/v2/alch-demo',
+  'https://rpc.ankr.com/solana',
+  'https://api.mainnet-beta.solana.com',
+  'https://solana-api.projectserum.com',
+  'https://api.devnet.solana.com'
+];
+
+let currentRpcIndex = 0;
+let connection = new Connection(RPC_ENDPOINTS[currentRpcIndex]);
+
+// Function to get next working RPC connection
+const getWorkingConnection = async (): Promise<Connection> => {
+  for (let i = 0; i < RPC_ENDPOINTS.length; i++) {
+    try {
+      const testConnection = new Connection(RPC_ENDPOINTS[currentRpcIndex]);
+      // Test the connection with a simple getSlot call
+      await testConnection.getSlot();
+      connection = testConnection;
+      return testConnection;
+    } catch (error) {
+      console.log(`RPC ${RPC_ENDPOINTS[currentRpcIndex]} failed, trying next...`);
+      currentRpcIndex = (currentRpcIndex + 1) % RPC_ENDPOINTS.length;
+    }
+  }
+  // If all fail, return the last connection and let it error
+  return connection;
+};
 
 export function FixoriumWalletProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<WalletUser | null>(null);
