@@ -496,7 +496,9 @@ export default function SignIn() {
               <div className="auth-description">
                 <h2>Enter Verification Code</h2>
                 <p>
-                  We've sent a 6-digit code to <strong>{formatPhoneNumber(state.phoneNumber)}</strong>. 
+                  We've sent a 6-digit code to <strong>
+                    {state.selectedCountry?.flag} {state.selectedCountry?.dialCode} {formatPhoneNumber(state.phoneNumber)}
+                  </strong>.
                   Enter the code below to {type === 'recovery' ? 'recover your account' : 'create your wallet'}.
                 </p>
               </div>
