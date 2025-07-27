@@ -141,7 +141,7 @@ export default function Settings() {
                   <>📤 Export Data</>
                 )}
               </button>
-              <button className="btn btn-danger" onClick={() => disconnect()}>
+              <button className="btn btn-danger" onClick={() => signOutWallet()}>
                 🔌 Disconnect Wallet
               </button>
             </div>
