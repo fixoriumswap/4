@@ -2962,54 +2962,38 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   margin-bottom: 40px;
 }
 
-.option-card {
+.single-option-card {
   background: #23272f;
   border: 2px solid #374151;
   border-radius: 16px;
-  padding: 30px;
+  padding: 40px;
   transition: all 0.3s ease;
 }
 
-.option-card:hover {
+.single-option-card:hover {
   border-color: #29D6B6;
   box-shadow: 0 0 20px rgba(41, 214, 182, 0.1);
 }
 
-.option-icon {
-  width: 60px;
-  height: 60px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.create-icon {
-  background: linear-gradient(135deg, #29D6B6, #16a085);
+.single-option-card h2 {
+  font-size: 1.8rem;
   color: #fff;
+  margin: 0 0 15px 0;
+  text-align: center;
 }
 
-.recover-icon {
-  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-  color: #fff;
-}
-
-.option-icon svg {
-  width: 30px;
-  height: 30px;
-}
-
-.option-card h2 {
-  font-size: 1.5rem;
-  color: #fff;
-  margin: 0 0 10px 0;
-}
-
-.option-card p {
+.single-option-card p {
   color: #9ca3af;
-  margin: 0 0 25px 0;
-  line-height: 1.5;
+  margin: 0 0 30px 0;
+  line-height: 1.6;
+  text-align: center;
+  font-size: 1.1rem;
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
 }
 
 .setup-button {
