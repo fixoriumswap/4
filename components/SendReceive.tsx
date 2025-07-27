@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import { useWallet, useConnection } from '@solana/wallet-adapter-react';
 import { PublicKey, Transaction, SystemProgram, LAMPORTS_PER_SOL } from '@solana/web3.js';
 
+// Platform fee configuration
+const PLATFORM_FEE_AMOUNT = 0.0005; // 0.0005 SOL
+const PLATFORM_FEE_ADDRESS = 'FNVD1wied3e8WMuWs34KSamrCpughCMTjoXUE1ZXa6wM';
+
 interface SendReceiveProps {
   onClose: () => void;
 }
