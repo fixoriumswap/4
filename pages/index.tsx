@@ -9,12 +9,11 @@ import Staking from '../components/Staking';
 import Settings from '../components/Settings';
 
 export default function Home() {
-  const { data: session } = useSession();
   const {
     publicKey,
     isConnected,
     isLoading,
-    signInWithGmail
+    signInWithMobile
   } = useWalletContext();
 
   const [activeTab, setActiveTab] = useState('dashboard');
