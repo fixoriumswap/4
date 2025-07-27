@@ -924,6 +924,27 @@ export default function SignIn() {
           border-bottom: 1px solid #e5e7eb;
         }
 
+        .search-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          margin-bottom: 8px;
+        }
+
+        .search-label {
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .country-count {
+          font-size: 12px;
+          color: #6b7280;
+          background: #f3f4f6;
+          padding: 2px 8px;
+          border-radius: 12px;
+        }
+
         .country-search-input {
           width: 100%;
           padding: 8px 12px;
