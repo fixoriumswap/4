@@ -13,7 +13,7 @@ export default function Home() {
     publicKey,
     isConnected,
     isLoading,
-    signInWithMobile
+    signInWithGmail
   } = useWalletContext();
 
   const [activeTab, setActiveTab] = useState('dashboard');
