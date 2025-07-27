@@ -2849,18 +2849,37 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
     max-height: 95vh;
   }
 
-  .welcome-content h1 {
+  .loader-title {
     font-size: 36px;
   }
 
-  .features-grid {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .loader-subtitle {
+    font-size: 16px;
   }
 
-  .wallet-overview {
-    grid-template-columns: 1fr;
-    gap: 16px;
+  .crypto-orbit {
+    width: 250px;
+    height: 250px;
+  }
+
+  .center-logo {
+    width: 60px;
+    height: 60px;
+  }
+
+  .orbit-coin {
+    width: 40px;
+    height: 40px;
+    margin-left: -20px;
+    margin-top: -20px;
+  }
+
+  .app-interface {
+    padding: 16px;
+  }
+
+  .swap-form-container {
+    padding: 24px 16px;
   }
 
   .bottom-bar-content {
