@@ -113,8 +113,21 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   // Check session on mount
   useEffect(() => {
-    checkSession();
-  }, []);
+    let isMounted = true;
+
+    const initializeSession = async () => {
+      if (isMounted && !isCheckingSession) {
+        await checkSession();
+      }
+    };
+
+    initializeSession();
+
+    // Cleanup function
+    return () => {
+      isMounted = false;
+    };
+  }, []); // Empty dependency array - only run on mount
 
   // Generate wallet from mobile session
   useEffect(() => {
