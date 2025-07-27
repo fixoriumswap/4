@@ -1,19 +1,27 @@
 import '../styles/globals.css'
 import '@solana/wallet-adapter-react-ui/styles.css';
 import type { AppProps } from 'next/app'
+import { SessionProvider } from 'next-auth/react'
 import { WalletAdapterNetwork } from '@solana/wallet-adapter-base';
 import { ConnectionProvider, WalletProvider } from '@solana/wallet-adapter-react';
 import { 
   PhantomWalletAdapter,
   SolflareWalletAdapter,
   TorusWalletAdapter,
-  LedgerWalletAdapter
+  LedgerWalletAdapter,
+  MathWalletAdapter,
+  Coin98WalletAdapter,
+  SlopeWalletAdapter,
+  BackpackWalletAdapter,
+  GlowWalletAdapter,
+  BraveWalletAdapter
 } from '@solana/wallet-adapter-wallets';
 import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import { clusterApiUrl } from '@solana/web3.js';
 import { useMemo } from 'react';
+import { WalletProvider as CustomWalletProvider } from '../components/WalletContext';
 
-export default function App({ Component, pageProps }: AppProps) {
+export default function App({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   // Use mainnet-beta for production
   const network = WalletAdapterNetwork.Mainnet;
   
@@ -23,41 +31,52 @@ export default function App({ Component, pageProps }: AppProps) {
     return process.env.NEXT_PUBLIC_RPC_URL || clusterApiUrl(network);
   }, [network]);
 
-  // Wallet list with only verified working adapters
+  // Comprehensive wallet list for maximum compatibility
   const wallets = useMemo(
     () => [
-      // Core wallets that are stable
+      // Most popular wallets first
       new PhantomWalletAdapter(),
       new SolflareWalletAdapter({ network }),
+      new BackpackWalletAdapter(),
+      new GlowWalletAdapter(),
+      new BraveWalletAdapter(),
+      
+      // Additional wallet support
       new TorusWalletAdapter(),
       new LedgerWalletAdapter(),
+      new MathWalletAdapter(),
+      new Coin98WalletAdapter(),
+      new SlopeWalletAdapter(),
     ],
     [network]
   );
 
   return (
-    <ConnectionProvider 
-      endpoint={endpoint}
-      config={{
-        commitment: 'confirmed',
-        wsEndpoint: endpoint.replace('https://', 'wss://').replace('http://', 'ws://'),
-        confirmTransactionInitialTimeout: 60000,
-      }}
-    >
-      <WalletProvider 
-        wallets={wallets} 
-        autoConnect={false}
-        onError={(error) => {
-          console.error('Wallet error:', error);
-          // In production, you might want to send this to an error reporting service
+    <SessionProvider session={session}>
+      <ConnectionProvider 
+        endpoint={endpoint}
+        config={{
+          commitment: 'confirmed',
+          wsEndpoint: endpoint.replace('https://', 'wss://').replace('http://', 'ws://'),
+          confirmTransactionInitialTimeout: 60000,
         }}
       >
-        <WalletModalProvider
-          featuredWallets={4} // Show top 4 wallets prominently
+        <WalletProvider 
+          wallets={wallets} 
+          autoConnect={true}
+          onError={(error) => {
+            console.error('Wallet error:', error);
+          }}
         >
-          <Component {...pageProps} />
-        </WalletModalProvider>
-      </WalletProvider>
-    </ConnectionProvider>
+          <WalletModalProvider
+            featuredWallets={6} // Show top 6 wallets prominently
+          >
+            <CustomWalletProvider>
+              <Component {...pageProps} />
+            </CustomWalletProvider>
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </SessionProvider>
   );
 }
