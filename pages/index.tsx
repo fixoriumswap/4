@@ -20,9 +20,15 @@ export default function Home() {
             <CryptoLoader />
           </div>
         ) : !isAuthenticated ? (
-          <div className="welcome-page">
-            <CryptoLoader />
-          </div>
+          showSetup ? (
+            <div className="setup-page">
+              <WalletSetup />
+            </div>
+          ) : (
+            <div className="welcome-page">
+              <CryptoLoader onComplete={() => setShowSetup(true)} />
+            </div>
+          )
         ) : (
           <div className="app-interface">
             <SwapInterface />
