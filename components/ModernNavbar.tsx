@@ -15,7 +15,7 @@ export default function ModernNavbar({
   connectionType,
   publicKey
 }: ModernNavbarProps) {
-  const { data: session } = useSession();
+  const { user, signOutWallet } = useWalletContext();
   const [showDropdown, setShowDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
 
