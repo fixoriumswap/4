@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 import { 
   Connection, 
   PublicKey, 
@@ -28,7 +28,7 @@ interface Token {
 }
 
 export default function SendReceive() {
-  const { publicKey, signTransaction, connected } = useWallet();
+  const { publicKey, keypair, isConnected: connected } = useWalletContext();
   const [activeTab, setActiveTab] = useState<'send' | 'receive'>('send');
   const [selectedToken, setSelectedToken] = useState<Token | null>(null);
   const [tokens, setTokens] = useState<Token[]>([]);
@@ -283,7 +283,7 @@ export default function SendReceive() {
           className={`tab-switch-btn ${activeTab === 'receive' ? 'active' : ''}`}
           onClick={() => setActiveTab('receive')}
         >
-          📥 Receive
+          ��� Receive
         </button>
       </div>
 
