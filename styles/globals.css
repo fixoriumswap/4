@@ -3044,29 +3044,7 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
   transform: none;
 }
 
-.option-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-  margin: 10px 0;
-}
 
-.option-divider::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: #374151;
-}
-
-.option-divider span {
-  background: #181a20;
-  padding: 0 20px;
-  color: #9ca3af;
-  font-weight: 600;
-}
 
 .setup-footer {
   margin-top: 40px;
