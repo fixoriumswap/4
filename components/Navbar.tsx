@@ -1,9 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { useWalletContext } from './WalletContext';
 
 export default function Navbar() {
-  const { publicKey, disconnect, connected, connecting, wallet } = useWallet();
+  const { publicKey, signOutWallet, isConnected: connected, isLoading: connecting } = useWalletContext();
   const [copied, setCopied] = useState(false);
 
   const address = publicKey?.toBase58();
