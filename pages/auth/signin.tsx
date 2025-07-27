@@ -31,6 +31,8 @@ export default function SignIn() {
     showCountryPicker: false
   })
 
+  const [countrySearch, setCountrySearch] = useState('')
+
   const codeInputsRef = useRef<(HTMLInputElement | null)[]>([])
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
 
