@@ -46,38 +46,68 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [connectionType, setConnectionType] = useState<'mobile' | null>(null);
 
+  // Flag to prevent concurrent session checks
+  const [isCheckingSession, setIsCheckingSession] = useState(false);
+
   const isConnected = !!user && !!publicKey;
+
+  const clearWalletState = () => {
+    setUser(null);
+    setKeypair(null);
+    setPublicKey(null);
+    setBalance(0);
+    setConnectionType(null);
+  };
 
   // Check session on mount and when needed
   const checkSession = async () => {
-    try {
-      setIsLoading(true);
-      const response = await fetch('/api/auth/session');
-      const data = await response.json();
+    // Prevent concurrent session checks
+    if (isCheckingSession) {
+      return;
+    }
 
-      if (response.ok && data.isValid) {
+    try {
+      setIsCheckingSession(true);
+      setIsLoading(true);
+
+      const response = await fetch('/api/auth/session', {
+        method: 'GET',
+        credentials: 'include',
+        cache: 'no-cache'
+      });
+
+      // Check if response is ok before trying to parse JSON
+      if (!response.ok) {
+        clearWalletState();
+        return;
+      }
+
+      // Clone response to avoid "body stream already read" error
+      const responseClone = response.clone();
+      let data;
+
+      try {
+        data = await responseClone.json();
+      } catch (jsonError) {
+        console.warn('Failed to parse session response as JSON:', jsonError);
+        clearWalletState();
+        return;
+      }
+
+      if (data && data.isValid && data.user) {
         setUser({
           phoneNumber: data.user.phoneNumber,
           walletSeed: data.user.walletSeed
         });
       } else {
-        // Invalid session, clear state
-        setUser(null);
-        setKeypair(null);
-        setPublicKey(null);
-        setBalance(0);
-        setConnectionType(null);
+        clearWalletState();
       }
     } catch (error) {
       console.error('Session check error:', error);
-      // Network error or no session
-      setUser(null);
-      setKeypair(null);
-      setPublicKey(null);
-      setBalance(0);
-      setConnectionType(null);
+      clearWalletState();
     } finally {
       setIsLoading(false);
+      setIsCheckingSession(false);
     }
   };
 
