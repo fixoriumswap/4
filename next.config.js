@@ -4,10 +4,6 @@ const nextConfig = {
   // Improve error handling and security
   poweredByHeader: false,
   compress: true,
-  // Reduce bundle size and improve performance
-  experimental: {
-    optimizeCss: true,
-  },
   // Add headers for better security and error handling
   async headers() {
     return [
