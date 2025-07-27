@@ -92,11 +92,9 @@ export default function SignIn() {
     setCountrySearch('')
   }
 
-  // Filter countries based on search
-  const filteredCountries = location?.availableCountries.filter(country =>
-    country.name.toLowerCase().includes(countrySearch.toLowerCase()) ||
-    country.dialCode.includes(countrySearch)
-  ) || []
+  // Filter and sort countries based on search
+  const filteredCountries = location ?
+    sortCountries(filterCountries(location.availableCountries, countrySearch)) : []
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
