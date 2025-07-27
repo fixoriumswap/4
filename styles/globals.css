@@ -3083,8 +3083,8 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
     font-size: 2rem;
   }
 
-  .option-card {
-    padding: 25px 20px;
+  .single-option-card {
+    padding: 30px 20px;
   }
 
   .setup-button {
