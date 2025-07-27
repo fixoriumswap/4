@@ -34,6 +34,44 @@ export default function SignIn() {
 
   const [countrySearch, setCountrySearch] = useState('')
 
+  // Utility function to show development verification code
+  const showDevelopmentCode = (code: string) => {
+    console.log(`🔑 Verification Code: ${code}`)
+
+    // Create a more visible notification
+    const notification = document.createElement('div')
+    notification.innerHTML = `
+      <div style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: #28a745;
+        color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        z-index: 10000;
+        font-family: monospace;
+        font-size: 16px;
+        font-weight: bold;
+        max-width: 300px;
+      ">
+        🔑 DEVELOPMENT MODE<br/>
+        Your verification code is:<br/>
+        <span style="font-size: 24px; letter-spacing: 2px;">${code}</span><br/>
+        <small>Copy this code to verify</small>
+      </div>
+    `
+    document.body.appendChild(notification)
+
+    // Remove notification after 15 seconds
+    setTimeout(() => {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification)
+      }
+    }, 15000)
+  }
+
   const codeInputsRef = useRef<(HTMLInputElement | null)[]>([])
   const countdownRef = useRef<NodeJS.Timeout | null>(null)
 
