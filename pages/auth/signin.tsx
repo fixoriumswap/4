@@ -1164,6 +1164,51 @@ export default function SignIn() {
             height: 48px;
             font-size: 18px;
           }
+
+          .vpn-warning {
+            flex-direction: column;
+            text-align: center;
+            padding: 16px;
+          }
+
+          .warning-content h3 {
+            font-size: 14px;
+          }
+
+          .warning-content p {
+            font-size: 12px;
+          }
+
+          .country-selector {
+            padding: 12px 8px;
+            min-width: 70px;
+          }
+
+          .country-flag {
+            font-size: 16px;
+          }
+
+          .country-code {
+            font-size: 12px;
+          }
+
+          .country-picker {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90vw;
+            max-width: 400px;
+            max-height: 60vh;
+          }
+
+          .country-option {
+            padding: 16px 12px;
+          }
+
+          .location-info {
+            font-size: 11px;
+          }
         }
       `}</style>
     </div>
