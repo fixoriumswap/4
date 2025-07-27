@@ -8,8 +8,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   try {
     // Clear session cookies
     res.setHeader('Set-Cookie', [
-      'mobile-wallet-session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0',
-      'mobile-wallet-phone=; Secure; SameSite=Strict; Path=/; Max-Age=0'
+      'gmail-wallet-session=; HttpOnly; Secure; SameSite=Strict; Path=/; Max-Age=0',
+      'gmail-wallet-email=; Secure; SameSite=Strict; Path=/; Max-Age=0'
     ])
 
     res.status(200).json({ 
