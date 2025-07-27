@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 
 export interface TransactionDetails {
   type: 'transfer' | 'swap' | 'stake' | 'unstake';
@@ -28,7 +28,7 @@ export default function TransactionConfirmation({
   onCancel,
   loading = false
 }: TransactionConfirmationProps) {
-  const { publicKey } = useWallet();
+  const { publicKey } = useWalletContext();
   const [securityCheck, setSecurityCheck] = useState(false);
   const [countdown, setCountdown] = useState(10);
 
