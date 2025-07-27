@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useWallet } from '@solana/wallet-adapter-react';
+import { useWalletContext } from './WalletContext';
 import { 
   Connection, 
   PublicKey, 
@@ -67,7 +67,7 @@ const POPULAR_VALIDATORS: Validator[] = [
 ];
 
 export default function Staking() {
-  const { publicKey, signTransaction, connected } = useWallet();
+  const { publicKey, keypair, isConnected: connected } = useWalletContext();
   const [solBalance, setSolBalance] = useState<number>(0);
   const [stakeAccounts, setStakeAccounts] = useState<StakeAccount[]>([]);
   const [selectedValidator, setSelectedValidator] = useState<Validator>(POPULAR_VALIDATORS[0]);
