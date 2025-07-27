@@ -12,8 +12,13 @@ function generateCode(): string {
 
 // Validate phone number format
 function isValidPhoneNumber(phone: string): boolean {
-  const phoneRegex = /^\+?[1-9]\d{1,14}$/
-  return phoneRegex.test(phone.replace(/[\s\-\(\)]/g, ''))
+  // Remove all non-digit characters except +
+  const cleaned = phone.replace(/[^\d+]/g, '')
+
+  // Must start with + and have 7-15 digits total
+  const phoneRegex = /^\+[1-9]\d{6,14}$/
+
+  return phoneRegex.test(cleaned)
 }
 
 // Simulate SMS sending (in production, integrate with SMS service)
