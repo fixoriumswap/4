@@ -102,12 +102,12 @@ export default function ModernNavbar({
               <div className="wallet-details" onClick={() => setShowDropdown(!showDropdown)}>
                 <div className="wallet-avatar">
                   <div className="avatar-placeholder">
-                    📱
+                    📧
                   </div>
                 </div>
                 <div className="wallet-text">
                   <div className="wallet-name">
-                    {user?.phoneNumber ? `+1 ${user.phoneNumber.slice(-10).replace(/(\d{3})(\d{3})(\d{4})/, '$1 $2 $3')}` : 'Mobile Wallet'}
+                    {user?.email ? user.email.substring(0, user.email.indexOf('@')) : 'Gmail Wallet'}
                   </div>
                   <div className="wallet-address">
                     {publicKey ? formatAddress(publicKey.toString()) : 'Loading...'}
