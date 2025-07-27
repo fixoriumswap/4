@@ -36,7 +36,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [isWalletLoading, setIsWalletLoading] = useState(false);
-  const [connectionType, setConnectionType] = useState<'gmail' | 'extension' | null>(null);
+  const [connectionType, setConnectionType] = useState<'gmail' | null>(null);
 
   const isLoading = status === 'loading';
   const isConnected = !!session && !!publicKey;
