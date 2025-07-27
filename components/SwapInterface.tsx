@@ -32,9 +32,6 @@ const getWorkingConnection = async (): Promise<Connection> => {
   return new Connection(RPC_ENDPOINTS[0]); // Fallback to first endpoint
 };
 
-// Import the connection function from context
-import { useFixoriumWallet, PLATFORM_FEE_AMOUNT, PLATFORM_FEE_ADDRESS } from '../context/FixoriumWallet';
-
 export default function SwapInterface() {
   const { balance, getKeypair, publicKey, refreshBalance } = useFixoriumWallet();
   const [fromToken, setFromToken] = useState<Token>({
