@@ -5,7 +5,7 @@ import { PublicKey } from '@solana/web3.js';
 interface ModernNavbarProps {
   onConnectWallet: () => void;
   isConnected: boolean;
-  connectionType: 'gmail' | null;
+  connectionType: 'mobile' | null;
   publicKey: PublicKey | null;
 }
 
