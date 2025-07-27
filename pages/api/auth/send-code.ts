@@ -18,7 +18,12 @@ function isValidPhoneNumber(phone: string): boolean {
 
 // Simulate SMS sending (in production, integrate with SMS service)
 async function sendSMS(phone: string, code: string): Promise<boolean> {
+  // Enhanced logging for development
   console.log(`📱 SMS Simulation: Sending code ${code} to ${phone}`)
+  console.log(`🔑 VERIFICATION CODE FOR ${phone}: ${code}`)
+  console.log(`📋 Copy this code: ${code}`)
+  console.log(`⏰ Code expires in 10 minutes`)
+
   // In production: await smsService.send(phone, `Your Solana Wallet verification code is: ${code}`)
   return true
 }
