@@ -1,11 +1,16 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useSession, signIn, signOut } from 'next-auth/react';
 import { Keypair, Connection, PublicKey } from '@solana/web3.js';
-import { GmailWalletService } from '../utils/walletService';
+import { MobileWalletService } from '../utils/mobileWalletService';
+import { useRouter } from 'next/router';
+
+interface MobileUser {
+  phoneNumber: string;
+  walletSeed: string;
+}
 
 interface WalletContextType {
-  // Gmail Auth
-  session: any;
+  // Mobile Auth
+  user: MobileUser | null;
   isLoading: boolean;
   
   // Wallet Info
@@ -15,13 +20,14 @@ interface WalletContextType {
   isWalletLoading: boolean;
   
   // Methods
-  signInWithGmail: () => void;
+  signInWithMobile: () => void;
   signOutWallet: () => void;
   refreshBalance: () => Promise<void>;
+  checkSession: () => Promise<void>;
   
   // Connection status
   isConnected: boolean;
-  connectionType: 'gmail' | null;
+  connectionType: 'mobile' | null;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -31,25 +37,64 @@ interface WalletProviderProps {
 }
 
 export function WalletProvider({ children }: WalletProviderProps) {
-  const { data: session, status } = useSession();
+  const router = useRouter();
+  const [user, setUser] = useState<MobileUser | null>(null);
   const [keypair, setKeypair] = useState<Keypair | null>(null);
   const [publicKey, setPublicKey] = useState<PublicKey | null>(null);
   const [balance, setBalance] = useState<number>(0);
   const [isWalletLoading, setIsWalletLoading] = useState(false);
-  const [connectionType, setConnectionType] = useState<'gmail' | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [connectionType, setConnectionType] = useState<'mobile' | null>(null);
 
-  const isLoading = status === 'loading';
-  const isConnected = !!session && !!publicKey;
+  const isConnected = !!user && !!publicKey;
 
-  // Generate wallet from Gmail session
+  // Check session on mount and when needed
+  const checkSession = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch('/api/auth/session');
+      const data = await response.json();
+
+      if (response.ok && data.isValid) {
+        setUser({
+          phoneNumber: data.user.phoneNumber,
+          walletSeed: data.user.walletSeed
+        });
+      } else {
+        // Invalid session, clear state
+        setUser(null);
+        setKeypair(null);
+        setPublicKey(null);
+        setBalance(0);
+        setConnectionType(null);
+      }
+    } catch (error) {
+      console.error('Session check error:', error);
+      // Network error or no session
+      setUser(null);
+      setKeypair(null);
+      setPublicKey(null);
+      setBalance(0);
+      setConnectionType(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Check session on mount
   useEffect(() => {
-    if (session?.user?.id && session.walletSeed) {
+    checkSession();
+  }, []);
+
+  // Generate wallet from mobile session
+  useEffect(() => {
+    if (user?.phoneNumber && user?.walletSeed) {
       try {
         setIsWalletLoading(true);
         
-        const walletInfo = GmailWalletService.generateWalletFromGmail(
-          session.user.id,
-          session.walletSeed
+        const walletInfo = MobileWalletService.generateWalletFromMobile(
+          user.phoneNumber,
+          user.walletSeed
         );
         
         const keyPair = Keypair.fromSecretKey(walletInfo.privateKey);
@@ -57,13 +102,13 @@ export function WalletProvider({ children }: WalletProviderProps) {
         
         setKeypair(keyPair);
         setPublicKey(pubKey);
-        setConnectionType('gmail');
+        setConnectionType('mobile');
         
         // Refresh balance after wallet is set
         refreshBalance();
         
       } catch (error) {
-        console.error('Error generating wallet from Gmail:', error);
+        console.error('Error generating wallet from mobile:', error);
       } finally {
         setIsWalletLoading(false);
       }
@@ -73,7 +118,7 @@ export function WalletProvider({ children }: WalletProviderProps) {
       setBalance(0);
       setConnectionType(null);
     }
-  }, [session]);
+  }, [user]);
 
   const refreshBalance = async () => {
     if (!publicKey) return;
@@ -87,28 +132,39 @@ export function WalletProvider({ children }: WalletProviderProps) {
     }
   };
 
-  const signInWithGmail = () => {
-    signIn('google', { callbackUrl: '/' });
+  const signInWithMobile = () => {
+    router.push('/auth/signin');
   };
 
-  const signOutWallet = () => {
-    signOut({ callbackUrl: '/auth/signin' });
+  const signOutWallet = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch (error) {
+      console.error('Logout error:', error);
+    }
+    
+    // Clear local state
+    setUser(null);
     setKeypair(null);
     setPublicKey(null);
     setBalance(0);
     setConnectionType(null);
+    
+    // Redirect to signin
+    router.push('/auth/signin');
   };
 
   const value: WalletContextType = {
-    session,
+    user,
     isLoading,
     publicKey,
     keypair,
     balance,
     isWalletLoading,
-    signInWithGmail,
+    signInWithMobile,
     signOutWallet,
     refreshBalance,
+    checkSession,
     isConnected,
     connectionType,
   };
