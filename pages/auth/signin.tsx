@@ -858,6 +858,16 @@ export default function SignIn() {
           transition: transform 0.3s ease;
         }
 
+        .country-picker-overlay {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.3);
+          z-index: 999;
+        }
+
         .country-picker {
           position: absolute;
           top: 100%;
@@ -871,6 +881,37 @@ export default function SignIn() {
           max-height: 300px;
           overflow: hidden;
           margin-top: 4px;
+        }
+
+        .country-picker-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px 16px;
+          border-bottom: 1px solid #e5e7eb;
+          background: #f9fafb;
+        }
+
+        .country-picker-header h3 {
+          margin: 0;
+          font-size: 14px;
+          font-weight: 600;
+          color: #374151;
+        }
+
+        .close-picker-btn {
+          background: none;
+          border: none;
+          font-size: 16px;
+          color: #6b7280;
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 4px;
+          transition: background 0.2s ease;
+        }
+
+        .close-picker-btn:hover {
+          background: #e5e7eb;
         }
 
         .country-search {
