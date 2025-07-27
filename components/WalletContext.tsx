@@ -196,13 +196,14 @@ export function WalletProvider({ children }: WalletProviderProps) {
 
   const refreshBalance = async () => {
     if (!publicKey) return;
-    
+
     try {
       const connection = new Connection('https://api.mainnet-beta.solana.com', 'confirmed');
-      const balance = await connection.getBalance(publicKey);
+      const balance = await connection.getBalance(publicKey, 'confirmed');
       setBalance(balance / 1e9); // Convert lamports to SOL
     } catch (error) {
       console.error('Error fetching balance:', error);
+      // Don't clear balance on error, just log it
     }
   };
 
