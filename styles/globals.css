@@ -3327,7 +3327,7 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
 }
 
 @media (max-width: 768px) {
-  .setup-content {
+  .auth-content, .setup-content {
     padding: 0 10px;
   }
 
@@ -3335,12 +3335,26 @@ main { max-width: 600px; margin: 32px auto; padding: 0 16px; min-height: calc(10
     font-size: 2rem;
   }
 
-  .single-option-card {
+  .auth-form, .single-option-card {
     padding: 30px 20px;
   }
 
-  .setup-button {
+  .auth-button, .setup-button {
     padding: 12px 24px;
     font-size: 1rem;
+  }
+
+  .mobile-input-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .country-code {
+    text-align: center;
+  }
+
+  .verification-input {
+    font-size: 20px;
+    letter-spacing: 4px;
   }
 }
