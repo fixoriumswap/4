@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
 import { useSession, signOut } from 'next-auth/react';
-import { useWallet } from '@solana/wallet-adapter-react';
 import { PublicKey } from '@solana/web3.js';
 
 interface ModernNavbarProps {
   onConnectWallet: () => void;
   isConnected: boolean;
-  connectionType: 'gmail' | 'extension' | null;
+  connectionType: 'gmail' | null;
   publicKey: PublicKey | null;
 }
 
-export default function ModernNavbar({ 
-  onConnectWallet, 
-  isConnected, 
-  connectionType, 
-  publicKey 
+export default function ModernNavbar({
+  onConnectWallet,
+  isConnected,
+  connectionType,
+  publicKey
 }: ModernNavbarProps) {
   const { data: session } = useSession();
-  const { disconnect } = useWallet();
   const [showDropdown, setShowDropdown] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -34,28 +32,16 @@ export default function ModernNavbar({
   };
 
   const handleDisconnect = async () => {
-    if (connectionType === 'gmail') {
-      signOut({ callbackUrl: '/auth/signin' });
-    } else if (connectionType === 'extension') {
-      await disconnect();
-    }
+    signOut({ callbackUrl: '/auth/signin' });
     setShowDropdown(false);
   };
 
   const getConnectionIcon = () => {
-    if (connectionType === 'gmail') {
-      return (
-        <svg viewBox="0 0 24 24" className="connection-icon">
-          <path fill="currentColor" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.5 4.64L12 9.548l6.5-4.908 1.573-1.147C21.69 2.28 24 3.434 24 5.457z"/>
-        </svg>
-      );
-    } else {
-      return (
-        <svg viewBox="0 0 24 24" className="connection-icon">
-          <path fill="currentColor" d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-        </svg>
-      );
-    }
+    return (
+      <svg viewBox="0 0 24 24" className="connection-icon">
+        <path fill="currentColor" d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.5 4.64L12 9.548l6.5-4.908 1.573-1.147C21.69 2.28 24 3.434 24 5.457z"/>
+      </svg>
+    );
   };
 
   return (
@@ -109,7 +95,7 @@ export default function ModernNavbar({
                 </div>
                 <div className="connection-type">
                   {getConnectionIcon()}
-                  <span>{connectionType === 'gmail' ? 'Gmail' : 'Extension'}</span>
+                  <span>Gmail</span>
                 </div>
               </div>
               
